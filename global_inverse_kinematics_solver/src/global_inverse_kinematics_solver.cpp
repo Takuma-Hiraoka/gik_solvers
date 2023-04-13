@@ -1,0 +1,1 @@
+#include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
