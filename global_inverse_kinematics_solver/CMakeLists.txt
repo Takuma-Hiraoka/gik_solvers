@@ -15,6 +15,7 @@ find_package(ompl REQUIRED)
 
 
 catkin_package(
+  INCLUDE_DIRS include
   LIBRARIES global_inverse_kinematics_solver
   )
 
@@ -34,6 +35,10 @@ endforeach(lib)
 
 add_library(${PROJECT_NAME}
   src/global_inverse_kinematics_solver.cpp
+  src/GIKConstraint.cpp
+  src/GIKStateSpace.cpp
+  src/GIKGoalSpace.cpp
+  src/CnoidStateSpace.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
