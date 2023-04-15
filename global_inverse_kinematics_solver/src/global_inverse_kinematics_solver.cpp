@@ -9,6 +9,7 @@ namespace global_inverse_kinematics_solver{
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables);
     GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, constraints);
+    gikConstraint->setDelta(0.05); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
     GIKStateSpacePtr stateSpace = std::make_shared<GIKStateSpace>(ambientSpace, gikConstraint);
     ompl::base::ConstrainedSpaceInformationPtr spaceInformation = std::make_shared<ompl::base::ConstrainedSpaceInformation>(stateSpace);
     spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation));
