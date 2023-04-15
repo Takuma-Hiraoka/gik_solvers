@@ -12,7 +12,7 @@ namespace global_inverse_kinematics_solver{
   class GIKConstraint : public ompl_near_projection::NearConstraint{
   public:
     GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints) :
-      NearConstraint(0,0,0),
+      NearConstraint(1,0,0), // 3つの引数は使われないので適当に与える
       ambientSpace_(ambientSpace),
       variables_(getLinks(ambientSpace_)),
       bodies_(getBodies(variables_)),

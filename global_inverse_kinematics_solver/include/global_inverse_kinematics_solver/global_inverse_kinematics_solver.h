@@ -4,6 +4,7 @@
 #include <global_inverse_kinematics_solver/CnoidStateSpace.h>
 #include <global_inverse_kinematics_solver/GIKConstraint.h>
 #include <global_inverse_kinematics_solver/GIKGoalSpace.h>
+#include <global_inverse_kinematics_solver/GIKStateSpace.h>
 
 namespace global_inverse_kinematics_solver{
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

@@ -77,7 +77,7 @@ namespace global_inverse_kinematics_solver{
       link2State(wrapperStateSpace->getSpace(), state);
       return;
     }
-    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state);
+    ompl::base::WrapperStateSpace::StateType* wrapperState = dynamic_cast<ompl::base::WrapperStateSpace::StateType*>(state);
     if(wrapperState){
       link2State(space, wrapperState->getState());
       return;
@@ -149,26 +149,49 @@ namespace global_inverse_kinematics_solver{
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables){
     ompl::base::StateSpacePtr ambientSpace = nullptr;
     std::vector<cnoid::LinkPtr> realVectorVariables;
+    std::vector<double> low, high; // boundが無いとエラーになるので、一応関節角度上下限 or rootLinkの現在地+-1mで与えている
     for(int i=0;i<variables.size();i++){
       if(variables[i]->isRevoluteJoint() || variables[i]->isPrismaticJoint()) {
         realVectorVariables.push_back(variables[i]);
+        low.push_back(variables[i]->q_lower());
+        high.push_back(variables[i]->q_upper());
       }else if(variables[i]->isFreeJoint()) {
         if(realVectorVariables.size() > 0){
           std::shared_ptr<CnoidRealVectorStateSpace> realVectorStateSpace = std::make_shared<CnoidRealVectorStateSpace>(realVectorVariables, realVectorVariables.size());
+          ompl::base::RealVectorBounds bounds(realVectorVariables.size());
+          bounds.low = low;
+          bounds.high = high;
+          realVectorStateSpace->setBounds(bounds);
           ambientSpace = ambientSpace + realVectorStateSpace;
+          realVectorVariables.clear();
+          low.clear();
+          high.clear();
         }
         std::shared_ptr<CnoidSE3StateSpace> se3StateSpace = std::make_shared<CnoidSE3StateSpace>(variables[i]);
+        ompl::base::RealVectorBounds bounds(3);
+        bounds.low = std::vector<double>{variables[i]->p()[0]-1.0,variables[i]->p()[1]-1.0,variables[i]->p()[2]-1.0};
+        bounds.high = std::vector<double>{variables[i]->p()[0]+1.0,variables[i]->p()[1]+1.0,variables[i]->p()[2]+1.0};
+        se3StateSpace->setBounds(bounds);
         ambientSpace = ambientSpace + se3StateSpace;
       }
     }
     if(realVectorVariables.size() > 0){
       std::shared_ptr<CnoidRealVectorStateSpace> realVectorStateSpace = std::make_shared<CnoidRealVectorStateSpace>(realVectorVariables, realVectorVariables.size());
+      ompl::base::RealVectorBounds bounds(realVectorVariables.size());
+      bounds.low = low;
+      bounds.high = high;
+      realVectorStateSpace->setBounds(bounds);
       ambientSpace = ambientSpace + realVectorStateSpace;
+      realVectorVariables.clear();
+      low.clear();
+      high.clear();
     }
 
     if(ambientSpace == nullptr){
       ambientSpace = std::make_shared<CnoidRealVectorStateSpace>(std::vector<cnoid::LinkPtr>(),0);
     }
+
+    ambientSpace->registerDefaultProjection(std::make_shared<DummyProjectionEvaluator>(ambientSpace)); // WrapperStateSpace::setup()のときに、ambientSpaceのdefaultProjectionが無いとエラーになる. CompoundStateSpaceにはDefaultProjectionが無いので、とりあえず適当に与えておく
 
     return ambientSpace;
   }

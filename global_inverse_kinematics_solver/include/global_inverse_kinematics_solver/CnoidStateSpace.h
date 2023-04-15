@@ -48,6 +48,24 @@ namespace global_inverse_kinematics_solver{
   std::set<cnoid::BodyPtr> getBodies(const std::vector<cnoid::LinkPtr>& links);
 
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables);
+
+  class DummyProjectionEvaluator : public ompl::base::ProjectionEvaluator {
+  public:
+    DummyProjectionEvaluator(const ompl::base::StateSpace *space) : ProjectionEvaluator(space) {
+      // boundのサイズが0だとワーニングがでるので適当に与える
+      bounds_ = ompl::base::RealVectorBounds(1);
+      bounds_.setLow(-1);
+      bounds_.setHigh(1);
+    }
+    DummyProjectionEvaluator(const ompl::base::StateSpacePtr &space) : ProjectionEvaluator(space) {
+      // boundのサイズが0だとワーニングがでるので適当に与える
+      bounds_ = ompl::base::RealVectorBounds(1);
+      bounds_.setLow(-1);
+      bounds_.setHigh(1);
+    }
+    virtual unsigned int getDimension() const override { return 1; }
+    virtual void project(const ompl::base::State *state, Eigen::Ref<Eigen::VectorXd> projection) const override {}
+  };
 };
 
 #endif
