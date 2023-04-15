@@ -39,8 +39,10 @@ namespace global_inverse_kinematics_solver{
       const cnoid::LinkPtr link_;
   };
 
+  // space, stateは、同じクラスか、どちらか一方がambientSpaceでもう一方がそのWrapperStateSpace
   void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state);
   void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state);
+
   std::vector<cnoid::LinkPtr> getLinks(const ompl::base::StateSpacePtr& space);
   void getLinks(const ompl::base::StateSpacePtr& space, std::vector<cnoid::LinkPtr>& links);
   std::set<cnoid::BodyPtr> getBodies(const std::vector<cnoid::LinkPtr>& links);

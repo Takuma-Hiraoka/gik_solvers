@@ -35,12 +35,19 @@ namespace global_inverse_kinematics_solver{
   }
 
   void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state){
+
+    // space, stateのどちらか一方がambientSpace, もう一方がそのWrapperStateSpaceでも良いようにしている
     const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
     if(wrapperStateSpace != nullptr){
-      const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state);
-      state2Link(wrapperStateSpace->getSpace(), wrapperState->getState());
+      state2Link(wrapperStateSpace->getSpace(), state);
       return;
     }
+    const ompl::base::WrapperStateSpace::StateType* wrapperState = dynamic_cast<const ompl::base::WrapperStateSpace::StateType*>(state);
+    if(wrapperState) {
+      state2Link(space, wrapperState->getState());
+      return;
+    }
+
     const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
     if(realVectorStateSpace != nullptr) {
       const ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<const ompl::base::RealVectorStateSpace::StateType*>(state);
@@ -63,12 +70,19 @@ namespace global_inverse_kinematics_solver{
     }
   }
   void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state){
+
+    // space, stateのどちらか一方がambientSpace, もう一方がそのWrapperStateSpaceでも良いようにしている
     const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
     if(wrapperStateSpace != nullptr){
-      ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state);
-      link2State(wrapperStateSpace->getSpace(), wrapperState->getState());
+      link2State(wrapperStateSpace->getSpace(), state);
       return;
     }
+    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state);
+    if(wrapperState){
+      link2State(space, wrapperState->getState());
+      return;
+    }
+
     const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
     if(realVectorStateSpace != nullptr) {
       ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<ompl::base::RealVectorStateSpace::StateType*>(state);
