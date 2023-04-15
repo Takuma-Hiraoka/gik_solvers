@@ -6,6 +6,7 @@
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <cnoid/Body>
+#include <set>
 
 namespace global_inverse_kinematics_solver{
 
@@ -42,6 +43,7 @@ namespace global_inverse_kinematics_solver{
   void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state);
   std::vector<cnoid::LinkPtr> getLinks(const ompl::base::StateSpacePtr& space);
   void getLinks(const ompl::base::StateSpacePtr& space, std::vector<cnoid::LinkPtr>& links);
+  std::set<cnoid::BodyPtr> getBodies(const std::vector<cnoid::LinkPtr>& links);
 
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables);
 };

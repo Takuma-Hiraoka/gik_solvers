@@ -15,8 +15,6 @@ namespace global_inverse_kinematics_solver{
       return NearGoalSpace::isSatisfied(st, distance);
     }
 
-    // TODO
-
-    return true;
+    return constraint->isSatisfied(st, distance);
   }
 };

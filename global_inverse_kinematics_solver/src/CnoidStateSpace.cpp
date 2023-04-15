@@ -124,6 +124,14 @@ namespace global_inverse_kinematics_solver{
     }
   }
 
+  std::set<cnoid::BodyPtr> getBodies(const std::vector<cnoid::LinkPtr>& links){
+    std::set<cnoid::BodyPtr> bodies;
+    for(size_t i=0;i<links.size();i++){
+      if(links[i]->body()) bodies.insert(links[i]->body());
+    }
+    return bodies;
+  }
+
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables){
     ompl::base::StateSpacePtr ambientSpace = nullptr;
     std::vector<cnoid::LinkPtr> realVectorVariables;
