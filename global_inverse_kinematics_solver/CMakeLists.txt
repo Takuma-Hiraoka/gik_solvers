@@ -17,6 +17,7 @@ find_package(ompl REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES global_inverse_kinematics_solver
+  CATKIN_DEPENDS ompl_near_projection prioritized_inverse_kinematics_solver2
   )
 
 include_directories(
