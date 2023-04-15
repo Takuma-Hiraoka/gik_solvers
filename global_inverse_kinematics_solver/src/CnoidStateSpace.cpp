@@ -2,59 +2,126 @@
 
 namespace global_inverse_kinematics_solver{
 
-  void CnoidRealVectorStateSpace::StateType::link2State(){
+  void CnoidRealVectorStateSpace::link2State(ompl::base::State* state){
+    ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<ompl::base::RealVectorStateSpace::StateType*>(state);
     for(int i=0;i<links_.size();i++){
-      values[i] = links_[i]->q();
+      realVectorState->values[i] = links_[i]->q();
     }
   }
-  void CnoidRealVectorStateSpace::StateType::state2Link(){
+  void CnoidRealVectorStateSpace::state2Link(const ompl::base::State* state){
+    const ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<const ompl::base::RealVectorStateSpace::StateType*>(state);
     for(int i=0;i<links_.size();i++){
-      links_[i]->q() = values[i];
+      links_[i]->q() = realVectorState->values[i];
     }
   }
-  ompl::base::State *CnoidRealVectorStateSpace::allocState() const {
-    auto *rstate = new StateType(links_);
-    rstate->values = new double[dimension_];
-    return rstate;
-  }
-  void CnoidSE3StateSpace::StateType::link2State(){
-    setXYZ(link_->p()[0], link_->p()[1], link_->p()[2]);
+  void CnoidSE3StateSpace::link2State(ompl::base::State* state){
+    ompl::base::SE3StateSpace::StateType* se3State = static_cast<ompl::base::SE3StateSpace::StateType*>(state);
+    se3State->setXYZ(link_->p()[0], link_->p()[1], link_->p()[2]);
     cnoid::Quaternion q(link_->R());
-    rotation().w = q.w();
-    rotation().x = q.x();
-    rotation().y = q.y();
-    rotation().z = q.z();
+    se3State->rotation().w = q.w();
+    se3State->rotation().x = q.x();
+    se3State->rotation().y = q.y();
+    se3State->rotation().z = q.z();
   }
-  void CnoidSE3StateSpace::StateType::state2Link(){
-    link_->p()[0] = getX();
-    link_->p()[1] = getY();
-    link_->p()[2] = getZ();
-    link_->R() = cnoid::Quaternion(rotation().w,
-                                   rotation().x,
-                                   rotation().y,
-                                   rotation().z).toRotationMatrix();
-  }
-  ompl::base::State *CnoidSE3StateSpace::allocState() const {
-    auto *state = new StateType(link_);
-    allocStateComponents(state);
-    return state;
+  void CnoidSE3StateSpace::state2Link(const ompl::base::State* state){
+    const ompl::base::SE3StateSpace::StateType* se3State = static_cast<const ompl::base::SE3StateSpace::StateType*>(state);
+    link_->p()[0] = se3State->getX();
+    link_->p()[1] = se3State->getY();
+    link_->p()[2] = se3State->getZ();
+    link_->R() = cnoid::Quaternion(se3State->rotation().w,
+                                   se3State->rotation().x,
+                                   se3State->rotation().y,
+                                   se3State->rotation().z).toRotationMatrix();
   }
 
-  void state2Link(const ompl::base::State *state){
-    const ompl::base::WrapperStateSpace::StateType* wrapperState = std::dynamic_cast<ompl::base::WrapperStateSpace::StateType>(state);
-    if(wrapperState != nullptr) return state2Link(state->getState());
-    const CnoidRealVectorStateSpace::StateType* realVectorState = std::dynamic_cast<CnoidRealVectorStateSpace::StateType>(state);
-    if(realVectorState != nullptr) return state->state2Link();
-    const CnoidSE3StateSpace::StateType* se3State = std::dynamic_cast<CnoidRealVectorStateSpace::StateType>(state);
-    if(se3State != nullptr) return state->state2Link();
-    const ompl::base::CompoundStateSpace::StateType* compoundState = std::dynamic_cast<ompl::base::CompoundStateSpace::StateType>(state);
-    if(compoundState != nullptr) {
+  void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state){
+    const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
+    if(wrapperStateSpace != nullptr){
+      const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state);
+      state2Link(wrapperStateSpace->getSpace(), wrapperState->getState());
+      return;
+    }
+    const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
+    if(realVectorStateSpace != nullptr) {
+      const ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<const ompl::base::RealVectorStateSpace::StateType*>(state);
+      realVectorStateSpace->state2Link(realVectorState);
+      return;
+    }
+    const CnoidSE3StateSpacePtr se3StateSpace = std::dynamic_pointer_cast<CnoidSE3StateSpace>(space);
+    if(se3StateSpace != nullptr) {
+      const ompl::base::SE3StateSpace::StateType* se3State = static_cast<const ompl::base::SE3StateSpace::StateType*>(state);
+      se3StateSpace->state2Link(se3State);
+      return ;
+    }
+    const std::shared_ptr<ompl::base::CompoundStateSpace> compoundStateSpace = std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(space);
+    if(compoundStateSpace != nullptr) {
+      const ompl::base::CompoundStateSpace::StateType* compoundState = dynamic_cast<const ompl::base::CompoundStateSpace::StateType*>(state);
       for(int i=0;i<compoundStateSpace->getSubspaceCount();i++){
-        state2VariablesImpl((*compoundState)[i], compoundStateSpace->getSubspace(i), variables, variablesIndex);
+        state2Link(compoundStateSpace->getSubspace(i), (*compoundState)[i]);
       }
+      return;
     }
   }
-  void link2State(const ompl::base::State *state){
+  void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state){
+    const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
+    if(wrapperStateSpace != nullptr){
+      ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state);
+      link2State(wrapperStateSpace->getSpace(), wrapperState->getState());
+      return;
+    }
+    const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
+    if(realVectorStateSpace != nullptr) {
+      ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<ompl::base::RealVectorStateSpace::StateType*>(state);
+      realVectorStateSpace->link2State(realVectorState);
+      return;
+    }
+    const CnoidSE3StateSpacePtr se3StateSpace = std::dynamic_pointer_cast<CnoidSE3StateSpace>(space);
+    if(se3StateSpace != nullptr) {
+      ompl::base::SE3StateSpace::StateType* se3State = static_cast<ompl::base::SE3StateSpace::StateType*>(state);
+      se3StateSpace->link2State(se3State);
+      return ;
+    }
+    const std::shared_ptr<ompl::base::CompoundStateSpace> compoundStateSpace = std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(space);
+    if(compoundStateSpace != nullptr) {
+      ompl::base::CompoundStateSpace::StateType* compoundState = dynamic_cast<ompl::base::CompoundStateSpace::StateType*>(state);
+      for(int i=0;i<compoundStateSpace->getSubspaceCount();i++){
+        link2State(compoundStateSpace->getSubspace(i), (*compoundState)[i]);
+      }
+      return;
+    }
+  }
+
+  std::vector<cnoid::LinkPtr> getLinks(const ompl::base::StateSpacePtr& space){
+    std::vector<cnoid::LinkPtr> links;
+    getLinks(space, links);
+    return links;
+  }
+
+  void getLinks(const ompl::base::StateSpacePtr& space, std::vector<cnoid::LinkPtr>& links){
+    const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
+    if(wrapperStateSpace != nullptr){
+      getLinks(wrapperStateSpace->getSpace(), links);
+      return;
+    }
+    const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
+    if(realVectorStateSpace != nullptr) {
+      const std::vector<cnoid::LinkPtr>& tmp_links = realVectorStateSpace->links();
+      std::copy(tmp_links.begin(), tmp_links.end(), std::back_inserter(links));
+      return;
+    }
+    const CnoidSE3StateSpacePtr se3StateSpace = std::dynamic_pointer_cast<CnoidSE3StateSpace>(space);
+    if(se3StateSpace != nullptr) {
+      const cnoid::LinkPtr& tmp_link = se3StateSpace->link();
+      links.push_back(tmp_link);
+      return ;
+    }
+    const std::shared_ptr<ompl::base::CompoundStateSpace> compoundStateSpace = std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(space);
+    if(compoundStateSpace != nullptr) {
+      for(int i=0;i<compoundStateSpace->getSubspaceCount();i++){
+        getLinks(compoundStateSpace->getSubspace(i), links);
+      }
+      return;
+    }
   }
 
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables){

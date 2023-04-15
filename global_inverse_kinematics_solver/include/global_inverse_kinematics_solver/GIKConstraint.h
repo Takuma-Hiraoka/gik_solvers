@@ -4,6 +4,7 @@
 #include <ompl_near_projection/ompl_near_projection.h>
 #include <ik_constraint2/ik_constraint2.h>
 #include <prioritized_inverse_kinematics_solver2/prioritized_inverse_kinematics_solver2.h>
+#include <global_inverse_kinematics_solver/CnoidStateSpace.h>
 
 namespace global_inverse_kinematics_solver{
   OMPL_CLASS_FORWARD(GIKConstraint); // GIKConstraintPtrを定義. (shared_ptr)
@@ -13,6 +14,7 @@ namespace global_inverse_kinematics_solver{
     GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints) :
       NearConstraint(0,0,0),
       ambientSpace_(ambientSpace),
+      variables_(getLinks(ambientSpace)),
       constraints_(constraints),
       ikConstraints_(constraints)
     {
@@ -30,6 +32,7 @@ namespace global_inverse_kinematics_solver{
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
+    const std::vector<cnoid::LinkPtr> variables_;
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints_;
     mutable std::vector<std::shared_ptr<prioritized_qp_base::Task> > tasks_;
     prioritized_inverse_kinematics_solver2::IKParam param_;
