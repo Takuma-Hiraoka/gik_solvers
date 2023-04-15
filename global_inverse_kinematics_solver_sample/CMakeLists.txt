@@ -46,13 +46,13 @@ install(TARGETS SampleSR1
 
 
 
-# add_library(CnoidPrioritizedInverseKinematicsSolver2SamplePlugin SHARED
-#   src/CnoidPrioritizedInverseKinematicsSolver2SamplePlugin.cpp
-#   src/sample1_4limb.cpp
-#   src/sample2_collision.cpp
-# )
-# target_link_libraries(CnoidPrioritizedInverseKinematicsSolver2SamplePlugin
-#   ${catkin_LIBRARIES}
-#   ${CHOREONOID_LIBRARIES_ABS}
-#   )
-# set_target_properties(CnoidPrioritizedInverseKinematicsSolver2SamplePlugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CHOREONOID_PLUGIN_DIR})
+add_library(CnoidGlobalInverseKinematicsSolverSamplePlugin SHARED
+  src/CnoidGlobalInverseKinematicsSolverSamplePlugin.cpp
+  src/sample1_4limb.cpp
+  #src/sample2_collision.cpp
+)
+target_link_libraries(CnoidGlobalInverseKinematicsSolverSamplePlugin
+  ${catkin_LIBRARIES}
+  ${CHOREONOID_LIBRARIES_ABS}
+  )
+set_target_properties(CnoidGlobalInverseKinematicsSolverSamplePlugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CHOREONOID_PLUGIN_DIR})

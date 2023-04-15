@@ -6,6 +6,6 @@ items:
   children: 
     - 
       id: 1
-      name: "PrioritizedInverseKinematicsSolver2SamplePlugin"
-      plugin: PrioritizedInverseKinematicsSolver2Sample
+      name: "GlobalInverseKinematicsSolverSamplePlugin"
+      plugin: GlobalInverseKinematicsSolverSample
       class: sample1_4limbItem

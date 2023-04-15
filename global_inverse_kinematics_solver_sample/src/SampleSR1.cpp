@@ -1,6 +1,5 @@
 #include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
-#include <ik_constraint2/PositionConstraint.h>
-#include <ik_constraint2/COMConstraint.h>
+#include <ik_constraint2/ik_constraint2.h>
 
 #include <cnoid/BodyLoader>
 #include <ros/package.h>
@@ -93,9 +92,13 @@ int main(void){
       constraints[i][j]->debugLevel() = 0;//debug
     }
   }
+  global_inverse_kinematics_solver::GIKParam param;
+  std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
   bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                            constraints,
-                                                           goals);
+                                                           goals,
+                                                           param,
+                                                           path);
 
   std::cerr << "solved: " << solved << std::endl;
 

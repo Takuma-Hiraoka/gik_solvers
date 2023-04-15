@@ -5,14 +5,16 @@
 namespace global_inverse_kinematics_solver{
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
-                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals){
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables);
     GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, constraints);
-    gikConstraint->setDelta(0.05); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
     GIKStateSpacePtr stateSpace = std::make_shared<GIKStateSpace>(ambientSpace, gikConstraint);
+    stateSpace->setDelta(0.05); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
     ompl::base::ConstrainedSpaceInformationPtr spaceInformation = std::make_shared<ompl::base::ConstrainedSpaceInformation>(stateSpace);
-    spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation));
+    spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation)); // validは全てconstraintでチェックするので、StateValidityCheckerは全てvalidでよい
     ompl::geometric::SimpleSetup simpleSetup(spaceInformation);
 
     ompl::base::ScopedState<> start(stateSpace);
@@ -38,10 +40,45 @@ namespace global_inverse_kinematics_solver{
 
 
     // attempt to solve the problem within one second of planning time
-    ompl::base::PlannerStatus solved = simpleSetup.solve(10.0);
+    ompl::base::PlannerStatus solved = simpleSetup.solve(param.timeout);
 
-    simpleSetup.getSolutionPath().print(std::cout);
+    if(param.debugLevel > 0){
+      simpleSetup.getSolutionPath().print(std::cout);
+    }
+
+    if(path != nullptr){
+      path->resize(simpleSetup.getSolutionPath().getStateCount());
+      for(int i=0;i<simpleSetup.getSolutionPath().getStateCount();i++){
+        //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
+        ompl::base::ScopedState<> state(stateSpace);
+        state = simpleSetup.getSolutionPath().getState(i);
+        std::vector<double> values = state.reals();
+        path->at(i).resize(values.size());
+        for(int j=0;j<values.size();j++){
+          path->at(i)[j] = state[j];
+        }
+      }
+    }
 
     return solved;
+  }
+
+  void frame2Variables(const std::vector<double>& frame, const std::vector<cnoid::LinkPtr>& variables){
+    int index = 0;
+    for(int i=0;i<variables.size();i++){
+      if(variables[i]->isRevoluteJoint() || variables[i]->isPrismaticJoint()) {
+        variables[i]->q() = frame[index];
+        index+=1;
+      }else if(variables[i]->isFreeJoint()) {
+        variables[i]->p()[0] = frame[index+0];
+        variables[i]->p()[1] = frame[index+1];
+        variables[i]->p()[2] = frame[index+2];
+        variables[i]->R() = cnoid::Quaternion(frame[index+6],
+                                              frame[index+3],
+                                              frame[index+4],
+                                              frame[index+5]).toRotationMatrix();
+        index+=7;
+      }
+    }
   }
 }
