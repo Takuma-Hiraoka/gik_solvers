@@ -49,7 +49,7 @@ install(TARGETS SampleSR1
 add_library(CnoidGlobalInverseKinematicsSolverSamplePlugin SHARED
   src/CnoidGlobalInverseKinematicsSolverSamplePlugin.cpp
   src/sample1_4limb.cpp
-  #src/sample2_collision.cpp
+  src/sample2_desk.cpp
 )
 target_link_libraries(CnoidGlobalInverseKinematicsSolverSamplePlugin
   ${catkin_LIBRARIES}

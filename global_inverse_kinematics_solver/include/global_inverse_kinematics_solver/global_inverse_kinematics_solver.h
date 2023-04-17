@@ -11,6 +11,8 @@ namespace global_inverse_kinematics_solver{
   public:
     int debugLevel = 0;
     double timeout = 10.0;
+    double delta = 0.05;
+    double range = 0.1;
   };
 
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

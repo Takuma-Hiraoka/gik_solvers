@@ -13,14 +13,14 @@ namespace global_inverse_kinematics_solver_sample{
   };
   typedef cnoid::ref_ptr<sample1_4limbItem> sample1_4limbItemPtr;
 
-  // void sample2_collision();
-  // class sample2_collisionItem : public choreonoid_viewer::ViewerBaseItem {
-  // public:
-  //   static void initializeClass(cnoid::ExtensionManager* ext){ ext->itemManager().registerClass<sample2_collisionItem>("sample2_collisionItem"); }
-  // protected:
-  //   virtual void main() override{ sample2_collision(); return; }
-  // };
-  // typedef cnoid::ref_ptr<sample2_collisionItem> sample2_collisionItemPtr;
+  void sample2_desk();
+  class sample2_deskItem : public choreonoid_viewer::ViewerBaseItem {
+  public:
+    static void initializeClass(cnoid::ExtensionManager* ext){ ext->itemManager().registerClass<sample2_deskItem>("sample2_deskItem"); }
+  protected:
+    virtual void main() override{ sample2_desk(); return; }
+  };
+  typedef cnoid::ref_ptr<sample2_deskItem> sample2_deskItemPtr;
 
   class GlobalInverseKinematicsSolverSamplePlugin : public cnoid::Plugin
   {
@@ -33,7 +33,7 @@ namespace global_inverse_kinematics_solver_sample{
     virtual bool initialize() override
     {
       sample1_4limbItem::initializeClass(this);
-      //sample2_collisionItem::initializeClass(this);
+      sample2_deskItem::initializeClass(this);
       return true;
     }
   };

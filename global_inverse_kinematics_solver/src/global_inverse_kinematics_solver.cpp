@@ -12,7 +12,7 @@ namespace global_inverse_kinematics_solver{
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables);
     GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, constraints);
     GIKStateSpacePtr stateSpace = std::make_shared<GIKStateSpace>(ambientSpace, gikConstraint);
-    stateSpace->setDelta(0.05); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
+    stateSpace->setDelta(param.delta); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
     ompl::base::ConstrainedSpaceInformationPtr spaceInformation = std::make_shared<ompl::base::ConstrainedSpaceInformation>(stateSpace);
     spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation)); // validは全てconstraintでチェックするので、StateValidityCheckerは全てvalidでよい
     ompl::geometric::SimpleSetup simpleSetup(spaceInformation);
@@ -32,7 +32,7 @@ namespace global_inverse_kinematics_solver{
     //std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(simpleSetup.getSpaceInformation());
     std::shared_ptr<ompl_near_projection::geometric::NearEST> planner = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
     //planner->setProjectionEvaluator("pos");
-    planner->setRange(0.1); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+    planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
     simpleSetup.setPlanner(planner);
 
 
@@ -60,7 +60,7 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
-    return solved;
+    return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
 
   void frame2Variables(const std::vector<double>& frame, const std::vector<cnoid::LinkPtr>& variables){

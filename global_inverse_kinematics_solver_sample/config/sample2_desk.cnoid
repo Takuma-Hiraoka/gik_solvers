@@ -8,4 +8,4 @@ items:
       id: 1
       name: "GlobalInverseKinematicsSolverSamplePlugin"
       plugin: GlobalInverseKinematicsSolverSample
-      class: sample1_4limbItem
+      class: sample2_deskItem
