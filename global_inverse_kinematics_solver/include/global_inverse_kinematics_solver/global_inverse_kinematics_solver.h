@@ -16,6 +16,9 @@ namespace global_inverse_kinematics_solver{
     double delta = 0.05;
     double range = 0.1;
 
+    cnoid::LinkPtr projectLink = nullptr;
+    cnoid::Position projectLocalPose = cnoid::Position::Identity();
+
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
   };
 

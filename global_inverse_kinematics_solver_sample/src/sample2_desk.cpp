@@ -130,6 +130,7 @@ namespace global_inverse_kinematics_solver_sample{
 
     // setup goals
     std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goal0;
+    std::shared_ptr<ik_constraint2::PositionConstraint> goalRaw;
     {
       // task: rarm to target.
       std::shared_ptr<ik_constraint2::PositionConstraint> goal = std::make_shared<ik_constraint2::PositionConstraint>();
@@ -139,6 +140,8 @@ namespace global_inverse_kinematics_solver_sample{
       goal->B_localpos().translation() = cnoid::Vector3(0.3,-0.2,0.4); // below desk
       goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
       goal0.push_back(goal);
+
+      goalRaw = goal;
     }
 
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
@@ -159,6 +162,8 @@ namespace global_inverse_kinematics_solver_sample{
     param.range = 0.2;
     param.delta = 0.1;
     param.timeout = 30.0;
+    param.projectLink = goalRaw->A_link();
+    param.projectLocalPose = goalRaw->A_localpos();
     param.viewer = viewer;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
@@ -210,7 +215,7 @@ namespace global_inverse_kinematics_solver_sample{
       viewer->drawOn(markers);
       viewer->drawObjects();
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     }
 
