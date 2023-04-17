@@ -49,16 +49,33 @@ namespace global_inverse_kinematics_solver{
     // attempt to solve the problem within one second of planning time
     ompl::base::PlannerStatus solved = simpleSetup.solve(param.timeout);
 
+    ompl::geometric::PathGeometric solutionPath = simpleSetup.getSolutionPath();
+
     if(param.debugLevel > 0){
-      simpleSetup.getSolutionPath().print(std::cout);
+      std::cerr << solutionPath.check() << std::endl;
+      solutionPath.print(std::cout);
+    }
+
+    simpleSetup.simplifySolution();
+    ompl::geometric::PathGeometric simpleSolutionPath = simpleSetup.getSolutionPath();
+
+    if(param.debugLevel > 0){
+      std::cerr << simpleSolutionPath.check() << std::endl;
+      simpleSolutionPath.print(std::cout);
+    }
+
+    simpleSolutionPath.interpolate();
+    if(param.debugLevel > 0){
+      std::cerr << simpleSolutionPath.check() << std::endl;
+      simpleSolutionPath.print(std::cout);
     }
 
     if(path != nullptr){
-      path->resize(simpleSetup.getSolutionPath().getStateCount());
-      for(int i=0;i<simpleSetup.getSolutionPath().getStateCount();i++){
+      path->resize(simpleSolutionPath.getStateCount());
+      for(int i=0;i<simpleSolutionPath.getStateCount();i++){
         //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
         ompl::base::ScopedState<> state(stateSpace);
-        state = simpleSetup.getSolutionPath().getState(i);
+        state = simpleSolutionPath.getState(i);
         std::vector<double> values = state.reals();
         path->at(i).resize(values.size());
         for(int j=0;j<values.size();j++){
