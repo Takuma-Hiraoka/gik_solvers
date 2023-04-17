@@ -30,9 +30,15 @@ namespace global_inverse_kinematics_solver{
     goal->setSpace(goalStateSpace);
     simpleSetup.setGoal(goal);
 
-    //std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(simpleSetup.getSpaceInformation());
-    std::shared_ptr<ompl_near_projection::geometric::NearEST> planner = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
-    //planner->setProjectionEvaluator("pos");
+    //std::shared_ptr<ompl_near_projection::geometric::NearEST> planner = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
+
+    std::shared_ptr<ik_constraint2::PositionConstraint> c = std::dynamic_pointer_cast<ik_constraint2::PositionConstraint>(goals[0][0]);
+    std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(simpleSetup.getSpaceInformation());
+    GIKProjectionEvaluatorPtr proj = std::make_shared<GIKProjectionEvaluator>(stateSpace);
+    proj->parentLink() = c->A_link();
+    proj->localPos() = c->A_localpos();
+    planner->setProjectionEvaluator(proj);
+
     planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
     simpleSetup.setPlanner(planner);
 

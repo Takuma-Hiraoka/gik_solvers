@@ -5,6 +5,7 @@
 #include <global_inverse_kinematics_solver/GIKConstraint.h>
 #include <global_inverse_kinematics_solver/GIKGoalSpace.h>
 #include <global_inverse_kinematics_solver/GIKStateSpace.h>
+#include <global_inverse_kinematics_solver/GIKProjectionEvaluator.h>
 #include <choreonoid_viewer/choreonoid_viewer.h>
 
 namespace global_inverse_kinematics_solver{

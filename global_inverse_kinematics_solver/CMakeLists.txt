@@ -41,6 +41,7 @@ add_library(${PROJECT_NAME}
   src/GIKStateSpace.cpp
   src/GIKGoalSpace.cpp
   src/CnoidStateSpace.cpp
+  src/GIKProjectionEvaluator.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}

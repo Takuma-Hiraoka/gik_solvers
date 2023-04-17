@@ -18,8 +18,8 @@ namespace global_inverse_kinematics_solver{
         links_(links)
     {
     }
-    virtual void link2State(ompl::base::State* state);
-    virtual void state2Link(const ompl::base::State* state);
+    virtual void link2State(ompl::base::State* state) const;
+    virtual void state2Link(const ompl::base::State* state) const;
     const std::vector<cnoid::LinkPtr>& links() const { return links_; }
     protected:
       const std::vector<cnoid::LinkPtr> links_;
@@ -32,8 +32,8 @@ namespace global_inverse_kinematics_solver{
         link_(link)
     {
     }
-    virtual void link2State(ompl::base::State* state);
-    virtual void state2Link(const ompl::base::State* state);
+    virtual void link2State(ompl::base::State* state) const;
+    virtual void state2Link(const ompl::base::State* state) const;
     const cnoid::LinkPtr& link() const { return link_; }
     protected:
       const cnoid::LinkPtr link_;
@@ -41,7 +41,9 @@ namespace global_inverse_kinematics_solver{
 
   // space, stateは、同じクラスか、どちらか一方がambientSpaceでもう一方がそのWrapperStateSpace
   void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state);
+  void state2Link(const ompl::base::StateSpace* space, const ompl::base::State *state);
   void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state);
+  void link2State(const ompl::base::StateSpace* space, ompl::base::State *state);
 
   std::vector<cnoid::LinkPtr> getLinks(const ompl::base::StateSpacePtr& space);
   void getLinks(const ompl::base::StateSpacePtr& space, std::vector<cnoid::LinkPtr>& links);

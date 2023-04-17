@@ -2,19 +2,19 @@
 
 namespace global_inverse_kinematics_solver{
 
-  void CnoidRealVectorStateSpace::link2State(ompl::base::State* state){
+  void CnoidRealVectorStateSpace::link2State(ompl::base::State* state) const{
     ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<ompl::base::RealVectorStateSpace::StateType*>(state);
     for(int i=0;i<links_.size();i++){
       realVectorState->values[i] = links_[i]->q();
     }
   }
-  void CnoidRealVectorStateSpace::state2Link(const ompl::base::State* state){
+  void CnoidRealVectorStateSpace::state2Link(const ompl::base::State* state) const{
     const ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<const ompl::base::RealVectorStateSpace::StateType*>(state);
     for(int i=0;i<links_.size();i++){
       links_[i]->q() = realVectorState->values[i];
     }
   }
-  void CnoidSE3StateSpace::link2State(ompl::base::State* state){
+  void CnoidSE3StateSpace::link2State(ompl::base::State* state) const{
     ompl::base::SE3StateSpace::StateType* se3State = static_cast<ompl::base::SE3StateSpace::StateType*>(state);
     se3State->setXYZ(link_->p()[0], link_->p()[1], link_->p()[2]);
     cnoid::Quaternion q(link_->R());
@@ -23,7 +23,7 @@ namespace global_inverse_kinematics_solver{
     se3State->rotation().y = q.y();
     se3State->rotation().z = q.z();
   }
-  void CnoidSE3StateSpace::state2Link(const ompl::base::State* state){
+  void CnoidSE3StateSpace::state2Link(const ompl::base::State* state) const{
     const ompl::base::SE3StateSpace::StateType* se3State = static_cast<const ompl::base::SE3StateSpace::StateType*>(state);
     link_->p()[0] = se3State->getX();
     link_->p()[1] = se3State->getY();
@@ -35,9 +35,13 @@ namespace global_inverse_kinematics_solver{
   }
 
   void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state){
+    state2Link(space.get(), state);
+  }
+
+  void state2Link(const ompl::base::StateSpace* space, const ompl::base::State *state){
 
     // space, stateのどちらか一方がambientSpace, もう一方がそのWrapperStateSpaceでも良いようにしている
-    const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
+    const ompl::base::WrapperStateSpace* wrapperStateSpace = dynamic_cast<const ompl::base::WrapperStateSpace*>(space);
     if(wrapperStateSpace != nullptr){
       state2Link(wrapperStateSpace->getSpace(), state);
       return;
@@ -48,19 +52,19 @@ namespace global_inverse_kinematics_solver{
       return;
     }
 
-    const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
+    const CnoidRealVectorStateSpace* realVectorStateSpace = dynamic_cast<const CnoidRealVectorStateSpace*>(space);
     if(realVectorStateSpace != nullptr) {
       const ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<const ompl::base::RealVectorStateSpace::StateType*>(state);
       realVectorStateSpace->state2Link(realVectorState);
       return;
     }
-    const CnoidSE3StateSpacePtr se3StateSpace = std::dynamic_pointer_cast<CnoidSE3StateSpace>(space);
+    const CnoidSE3StateSpace* se3StateSpace = dynamic_cast<const CnoidSE3StateSpace*>(space);
     if(se3StateSpace != nullptr) {
       const ompl::base::SE3StateSpace::StateType* se3State = static_cast<const ompl::base::SE3StateSpace::StateType*>(state);
       se3StateSpace->state2Link(se3State);
       return ;
     }
-    const std::shared_ptr<ompl::base::CompoundStateSpace> compoundStateSpace = std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(space);
+    const ompl::base::CompoundStateSpace* compoundStateSpace = dynamic_cast<const ompl::base::CompoundStateSpace*>(space);
     if(compoundStateSpace != nullptr) {
       const ompl::base::CompoundStateSpace::StateType* compoundState = dynamic_cast<const ompl::base::CompoundStateSpace::StateType*>(state);
       for(int i=0;i<compoundStateSpace->getSubspaceCount();i++){
@@ -70,9 +74,13 @@ namespace global_inverse_kinematics_solver{
     }
   }
   void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state){
+    link2State(space.get(), state);
+  }
+
+  void link2State(const ompl::base::StateSpace* space, ompl::base::State *state){
 
     // space, stateのどちらか一方がambientSpace, もう一方がそのWrapperStateSpaceでも良いようにしている
-    const ompl::base::WrapperStateSpacePtr wrapperStateSpace = std::dynamic_pointer_cast<ompl::base::WrapperStateSpace>(space);
+    const ompl::base::WrapperStateSpace* wrapperStateSpace = dynamic_cast<const ompl::base::WrapperStateSpace*>(space);
     if(wrapperStateSpace != nullptr){
       link2State(wrapperStateSpace->getSpace(), state);
       return;
@@ -83,19 +91,19 @@ namespace global_inverse_kinematics_solver{
       return;
     }
 
-    const CnoidRealVectorStateSpacePtr realVectorStateSpace = std::dynamic_pointer_cast<CnoidRealVectorStateSpace>(space);
+    const CnoidRealVectorStateSpace* realVectorStateSpace = dynamic_cast<const CnoidRealVectorStateSpace*>(space);
     if(realVectorStateSpace != nullptr) {
       ompl::base::RealVectorStateSpace::StateType* realVectorState = static_cast<ompl::base::RealVectorStateSpace::StateType*>(state);
       realVectorStateSpace->link2State(realVectorState);
       return;
     }
-    const CnoidSE3StateSpacePtr se3StateSpace = std::dynamic_pointer_cast<CnoidSE3StateSpace>(space);
+    const CnoidSE3StateSpace* se3StateSpace = dynamic_cast<const CnoidSE3StateSpace*>(space);
     if(se3StateSpace != nullptr) {
       ompl::base::SE3StateSpace::StateType* se3State = static_cast<ompl::base::SE3StateSpace::StateType*>(state);
       se3StateSpace->link2State(se3State);
       return ;
     }
-    const std::shared_ptr<ompl::base::CompoundStateSpace> compoundStateSpace = std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(space);
+    const ompl::base::CompoundStateSpace* compoundStateSpace = dynamic_cast<const ompl::base::CompoundStateSpace*>(space);
     if(compoundStateSpace != nullptr) {
       ompl::base::CompoundStateSpace::StateType* compoundState = dynamic_cast<ompl::base::CompoundStateSpace::StateType*>(state);
       for(int i=0;i<compoundStateSpace->getSubspaceCount();i++){
