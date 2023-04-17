@@ -42,6 +42,10 @@ namespace global_inverse_kinematics_solver_sample{
     desk->calcForwardKinematics();
     desk->calcCenterOfMass();
 
+    // setup viewer
+    std::shared_ptr<choreonoid_viewer::Viewer> viewer = std::make_shared<choreonoid_viewer::Viewer>();
+    viewer->objects(std::vector<cnoid::BodyPtr>{robot, desk});
+
     // setup constraints
     std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > constraints0;
 
@@ -155,6 +159,7 @@ namespace global_inverse_kinematics_solver_sample{
     param.range = 0.2;
     param.delta = 0.1;
     param.timeout = 30.0;
+    param.viewer = viewer;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
@@ -180,14 +185,10 @@ namespace global_inverse_kinematics_solver_sample{
       }
     }
 
-    // setup viewer
-    choreonoid_viewer::Viewer viewer;
-    viewer.objects(std::vector<cnoid::BodyPtr>{robot, desk});
-
     // main loop
     for(int i=0;i<path->size();i++){
       global_inverse_kinematics_solver::frame2Variables(path->at(i),variables);
-      robot->calcForwardKinematics();
+      robot->calcForwardKinematics(false);
       robot->calcCenterOfMass();
 
       std::vector<cnoid::SgNodePtr> markers;
@@ -206,8 +207,8 @@ namespace global_inverse_kinematics_solver_sample{
           std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
         }
       }
-      viewer.drawOn(markers);
-      viewer.drawObjects();
+      viewer->drawOn(markers);
+      viewer->drawObjects();
 
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 

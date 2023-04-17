@@ -15,4 +15,5 @@
   <depend>prioritized_inverse_kinematics_solver2</depend>
   <depend>ompl</depend>
   <depend>ompl_near_projection</depend>
+  <depend>choreonoid_viewer</depend>
 </package>

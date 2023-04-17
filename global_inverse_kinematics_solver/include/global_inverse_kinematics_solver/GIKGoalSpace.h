@@ -12,6 +12,7 @@ namespace global_inverse_kinematics_solver{
     GIKGoalSpace(const ompl::base::SpaceInformationPtr &si) : NearGoalSpace(si) {}
 
     virtual bool isSatisfied(const ompl::base::State *st, double *distance) const override;
+
   };
 };
 

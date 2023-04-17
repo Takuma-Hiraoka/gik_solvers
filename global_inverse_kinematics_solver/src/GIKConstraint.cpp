@@ -74,13 +74,33 @@ namespace global_inverse_kinematics_solver{
       (*it)->calcCenterOfMass();
     }
 
+    bool satisfied = true;
     for(size_t i=0;i<constraints_.size();i++){
       for(size_t j=0;j<constraints_[i].size();j++){
         constraints_[i][j]->updateBounds();
-        if(!constraints_[i][j]->isSatisfied()) return false;
+        if(!constraints_[i][j]->isSatisfied()) {
+          if(viewer_ == nullptr) return false;
+          satisfied = false;
+        }
       }
     }
-    return true;
+
+    if(viewer_ != nullptr){
+      loopCount_++;
+      if(loopCount_%drawLoop_==0){
+        std::vector<cnoid::SgNodePtr> markers;
+        for(int j=0;j<constraints_.size();j++){
+          for(int k=0;k<constraints_[j].size(); k++){
+            const std::vector<cnoid::SgNodePtr>& marker = constraints_[j][k]->getDrawOnObjects();
+            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
+          }
+        }
+        viewer_->drawOn(markers);
+        viewer_->drawObjects(true);
+      }
+    }
+
+    return satisfied;
   }
   bool GIKConstraint::isSatisfied (const ompl::base::State *state, double *distance) const {
     if(!distance) return isSatisfied(state);
@@ -103,6 +123,21 @@ namespace global_inverse_kinematics_solver{
     }
 
     *distance = std::sqrt(squaredDistance);
+
+    if(viewer_ != nullptr){
+      loopCount_++;
+      if(loopCount_%drawLoop_==0){
+        std::vector<cnoid::SgNodePtr> markers;
+        for(int j=0;j<constraints_.size();j++){
+          for(int k=0;k<constraints_[j].size(); k++){
+            const std::vector<cnoid::SgNodePtr>& marker = constraints_[j][k]->getDrawOnObjects();
+            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
+          }
+        }
+        viewer_->drawOn(markers);
+        viewer_->drawObjects(true);
+      }
+    }
 
     return isSatisfied;
 

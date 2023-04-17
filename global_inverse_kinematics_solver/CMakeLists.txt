@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   ik_constraint2
   prioritized_inverse_kinematics_solver2
   ompl_near_projection
+  choreonoid_viewer
   )
 
 find_package(choreonoid REQUIRED)

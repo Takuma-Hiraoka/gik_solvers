@@ -5,6 +5,7 @@
 #include <global_inverse_kinematics_solver/GIKConstraint.h>
 #include <global_inverse_kinematics_solver/GIKGoalSpace.h>
 #include <global_inverse_kinematics_solver/GIKStateSpace.h>
+#include <choreonoid_viewer/choreonoid_viewer.h>
 
 namespace global_inverse_kinematics_solver{
   class GIKParam {
@@ -13,6 +14,8 @@ namespace global_inverse_kinematics_solver{
     double timeout = 10.0;
     double delta = 0.05;
     double range = 0.1;
+
+    std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
   };
 
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

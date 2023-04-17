@@ -5,6 +5,7 @@
 #include <ik_constraint2/ik_constraint2.h>
 #include <prioritized_inverse_kinematics_solver2/prioritized_inverse_kinematics_solver2.h>
 #include <global_inverse_kinematics_solver/CnoidStateSpace.h>
+#include <choreonoid_viewer/choreonoid_viewer.h>
 
 namespace global_inverse_kinematics_solver{
   OMPL_CLASS_FORWARD(GIKConstraint); // GIKConstraintPtrを定義. (shared_ptr)
@@ -38,6 +39,8 @@ namespace global_inverse_kinematics_solver{
     virtual bool isSatisfied (const ompl::base::State *state, double *distance) const;
 
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
+    std::shared_ptr<choreonoid_viewer::Viewer>& viewer() {return viewer_;}
+    const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
     const std::vector<cnoid::LinkPtr> variables_;
@@ -48,6 +51,10 @@ namespace global_inverse_kinematics_solver{
 
     // constraintsの末尾にJointAngleConstraintを加えたもの
     mutable std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > ikConstraints_;
+
+    std::shared_ptr<choreonoid_viewer::Viewer> viewer_ = nullptr;
+    mutable int loopCount_ = 0;
+    int drawLoop_ = 100;
   };
 };
 

@@ -24,6 +24,7 @@ namespace global_inverse_kinematics_solver{
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goalConstraints = constraints;
     std::copy(goals.begin(), goals.end(), std::back_inserter(goalConstraints));
     GIKConstraintPtr goalGIKConstraint = std::make_shared<GIKConstraint>(ambientSpace, goalConstraints);
+    goalGIKConstraint->viewer() = param.viewer;
     GIKStateSpacePtr goalStateSpace = std::make_shared<GIKStateSpace>(ambientSpace, goalGIKConstraint);
     GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation);
     goal->setSpace(goalStateSpace);
