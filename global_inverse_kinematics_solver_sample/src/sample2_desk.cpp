@@ -159,8 +159,8 @@ namespace global_inverse_kinematics_solver_sample{
     }
     global_inverse_kinematics_solver::GIKParam param;
     param.debugLevel=1;
-    param.range = 0.2;
-    param.delta = 0.1;
+    param.range = 0.3; // 0.2よりも0.3の方が速い
+    param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
     param.timeout = 30.0;
     param.projectLink = goalRaw->A_link();
     param.projectLocalPose = goalRaw->A_localpos();
