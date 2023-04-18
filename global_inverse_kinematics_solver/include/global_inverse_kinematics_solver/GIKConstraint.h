@@ -12,10 +12,10 @@ namespace global_inverse_kinematics_solver{
 
   class GIKConstraint : public ompl_near_projection::NearConstraint{
   public:
-    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints) :
+    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, const std::vector<cnoid::LinkPtr>& variables) :
       NearConstraint(1,0,0), // 3つの引数は使われないので適当に与える
       ambientSpace_(ambientSpace),
-      variables_(getLinks(ambientSpace_)),
+      variables_(variables),
       bodies_(getBodies(variables_)),
       constraints_(constraints),
       ikConstraints_(constraints)
@@ -43,7 +43,7 @@ namespace global_inverse_kinematics_solver{
     const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
-    const std::vector<cnoid::LinkPtr> variables_;
+    const std::vector<cnoid::LinkPtr>& variables_;
     const std::set<cnoid::BodyPtr> bodies_;
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints_;
     mutable std::vector<std::shared_ptr<prioritized_qp_base::Task> > tasks_;

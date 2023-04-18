@@ -6,8 +6,8 @@ namespace global_inverse_kinematics_solver{
   }
 
   bool GIKConstraint::projectNear(ompl::base::State *state, const ompl::base::State *near) const{
-
-    state2Link(ambientSpace_, state);
+    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperState->getState(), variables_); // spaceとstateの空間をそろえる
 
     {
       // setup nearConstraints
@@ -37,20 +37,23 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
-    state2Link(ambientSpace_, near);
+    const ompl::base::WrapperStateSpace::StateType* wrapperNear = static_cast<const ompl::base::WrapperStateSpace::StateType*>(near); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperNear->getState(), variables_); // spaceとstateの空間をそろえる
 
     bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_,
                                                                       ikConstraints_,
                                                                       tasks_,
                                                                       param_);
 
-    link2State(ambientSpace_, state);
+    link2State(variables_, ambientSpace_, wrapperState->getState()); // spaceとstateの空間をそろえる
 
     return solved;
   }
 
   double GIKConstraint::distance (const ompl::base::State *state) const {
-    state2Link(ambientSpace_, state);
+    const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperState->getState(), variables_); // spaceとstateの空間をそろえる
+
     for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_.begin(); it != bodies_.end(); it++){
       (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
       (*it)->calcCenterOfMass();
@@ -68,7 +71,9 @@ namespace global_inverse_kinematics_solver{
     return std::sqrt(squaredDistance);
   }
   bool GIKConstraint::isSatisfied (const ompl::base::State *state) const {
-    state2Link(ambientSpace_, state);
+    const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperState->getState(), variables_); // spaceとstateの空間をそろえる
+
     for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_.begin(); it != bodies_.end(); it++){
       (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
       (*it)->calcCenterOfMass();
@@ -105,7 +110,9 @@ namespace global_inverse_kinematics_solver{
   bool GIKConstraint::isSatisfied (const ompl::base::State *state, double *distance) const {
     if(!distance) return isSatisfied(state);
 
-    state2Link(ambientSpace_, state);
+    const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperState->getState(), variables_); // spaceとstateの空間をそろえる
+
     for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_.begin(); it != bodies_.end(); it++){
       (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
       (*it)->calcCenterOfMass();

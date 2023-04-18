@@ -15,7 +15,7 @@ namespace global_inverse_kinematics_solver{
 
   void GIKProjectionEvaluator::project(const ompl::base::State *st, Eigen::Ref<Eigen::VectorXd> projection) const {
 
-    state2Link(space_, st);
+    state2Link(space_, st, variables_);
     for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_.begin(); it != bodies_.end(); it++){
       (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
       (*it)->calcCenterOfMass();

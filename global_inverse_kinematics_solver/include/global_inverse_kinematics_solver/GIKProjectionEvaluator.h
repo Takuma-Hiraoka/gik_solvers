@@ -9,9 +9,9 @@ namespace global_inverse_kinematics_solver{
 
   class GIKProjectionEvaluator : public ompl::base::ProjectionEvaluator{
   public:
-    GIKProjectionEvaluator(const ompl::base::StateSpacePtr &space) :
+    GIKProjectionEvaluator(const ompl::base::StateSpacePtr &space, const std::vector<cnoid::LinkPtr>& variables) :
       ompl::base::ProjectionEvaluator(space),
-      variables_(getLinks(space)),
+      variables_(variables),
       bodies_(getBodies(variables_))
     {
     }
@@ -25,7 +25,7 @@ namespace global_inverse_kinematics_solver{
     const cnoid::Position& localPos() const { return localPos_; }
 
   protected:
-    const std::vector<cnoid::LinkPtr> variables_;
+    const std::vector<cnoid::LinkPtr>& variables_;
     const std::set<cnoid::BodyPtr> bodies_;
 
     cnoid::LinkPtr parentLink_;

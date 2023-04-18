@@ -10,43 +10,17 @@
 
 namespace global_inverse_kinematics_solver{
 
-  OMPL_CLASS_FORWARD(CnoidRealVectorStateSpace); // StateSpacePtrを定義 (shared_ptr)
-  class CnoidRealVectorStateSpace : public ompl::base::RealVectorStateSpace{
-  public:
-    CnoidRealVectorStateSpace(const std::vector<cnoid::LinkPtr>& links, unsigned int dim = 0)
-      : RealVectorStateSpace(dim),
-        links_(links)
-    {
-    }
-    virtual void link2State(ompl::base::State* state) const;
-    virtual void state2Link(const ompl::base::State* state) const;
-    const std::vector<cnoid::LinkPtr>& links() const { return links_; }
-    protected:
-      const std::vector<cnoid::LinkPtr> links_;
-  };
-  OMPL_CLASS_FORWARD(CnoidSE3StateSpace); // StateSpacePtrを定義 (shared_ptr)
-  class CnoidSE3StateSpace : public ompl::base::SE3StateSpace{
-  public:
-    CnoidSE3StateSpace(const cnoid::LinkPtr& link)
-      : SE3StateSpace(),
-        link_(link)
-    {
-    }
-    virtual void link2State(ompl::base::State* state) const;
-    virtual void state2Link(const ompl::base::State* state) const;
-    const cnoid::LinkPtr& link() const { return link_; }
-    protected:
-      const cnoid::LinkPtr link_;
-  };
+  void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state, const std::vector<cnoid::LinkPtr>& links);
+  void state2Link(const ompl::base::StateSpace* space, const ompl::base::State *state, const std::vector<cnoid::LinkPtr>& links);
+  void link2State(const std::vector<cnoid::LinkPtr>& links, const ompl::base::StateSpacePtr& space, ompl::base::State *state);
+  void link2State(const std::vector<cnoid::LinkPtr>& links, const ompl::base::StateSpace* space, ompl::base::State *state);
+  void state2Frame(const ompl::base::StateSpacePtr& space, const ompl::base::State *state, std::vector<double>& frame);
+  void state2Frame(const ompl::base::StateSpace* space, const ompl::base::State *state, std::vector<double>& frame);
+  void frame2State(const std::vector<double>& frame, const ompl::base::StateSpacePtr& space, ompl::base::State *state);
+  void frame2State(const std::vector<double>& frame, const ompl::base::StateSpace* space, ompl::base::State *state);
+  void frame2Link(const std::vector<double>& frame, const std::vector<cnoid::LinkPtr>& links);
+  void link2Frame(const std::vector<cnoid::LinkPtr>& links, std::vector<double>& frame);
 
-  // space, stateは、同じクラスか、どちらか一方がambientSpaceでもう一方がそのWrapperStateSpace
-  void state2Link(const ompl::base::StateSpacePtr& space, const ompl::base::State *state);
-  void state2Link(const ompl::base::StateSpace* space, const ompl::base::State *state);
-  void link2State(const ompl::base::StateSpacePtr& space, ompl::base::State *state);
-  void link2State(const ompl::base::StateSpace* space, ompl::base::State *state);
-
-  std::vector<cnoid::LinkPtr> getLinks(const ompl::base::StateSpacePtr& space);
-  void getLinks(const ompl::base::StateSpacePtr& space, std::vector<cnoid::LinkPtr>& links);
   std::set<cnoid::BodyPtr> getBodies(const std::vector<cnoid::LinkPtr>& links);
 
   ompl::base::StateSpacePtr createAmbientSpace(const std::vector<cnoid::LinkPtr>& variables);
