@@ -21,11 +21,11 @@ namespace global_inverse_kinematics_solver{
       ikConstraints_(constraints)
     {
       param_.we = 1e2; // 逆運動学が振動しないこと優先. 1e0だと不安定. 1e3だと大きすぎる
-      param_.maxIteration = 200; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
-      param_.minIteration = 200;
+      param_.maxIteration = 100; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
+      param_.minIteration = 100;
       param_.checkFinalState = true; // ゼロ空間でreference angleに可能な限り近づけるタスクのprecitionは大きくして、常にsatisfiedになることに注意
       param_.calcVelocity = false; // 疎な軌道生成なので、velocityはチェックしない
-      param_.convergeThre = 5e-3; // 要パラチューン
+      param_.convergeThre = 2.5e-2; // 要パラチューン. IKConsraintのmaxErrorより小さくないと、収束誤判定する. maxErrorが5e-2の場合、5e-2だと大きすぎる. 5e-3だと小さすぎて時間がかかる. ikのwe, wn, wmax, maxErrorといったパラメータと連動してパラチューンせよ.
       ikConstraints_.push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >());
     }
 
