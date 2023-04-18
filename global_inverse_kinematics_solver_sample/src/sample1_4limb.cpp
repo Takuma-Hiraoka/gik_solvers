@@ -130,7 +130,7 @@ namespace global_inverse_kinematics_solver_sample{
 
     // main loop
     for(int i=0;i<path->size();i++){
-      global_inverse_kinematics_solver::frame2Variables(path->at(i),variables);
+      global_inverse_kinematics_solver::frame2Link(path->at(i),variables);
       robot->calcForwardKinematics();
       robot->calcCenterOfMass();
 

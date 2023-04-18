@@ -40,10 +40,12 @@ namespace global_inverse_kinematics_solver{
       proj->setCellSizes(std::vector<double>(proj->getDimension(), param.projectCellSize));
       planner->setProjectionEvaluator(proj);
       planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+      planner->setGoalBias(param.goalBias);
       simpleSetup.setPlanner(planner);
     }else{
       std::shared_ptr<ompl_near_projection::geometric::NearEST> planner = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
       planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+      planner->setGoalBias(param.goalBias);
       simpleSetup.setPlanner(planner);
     }
 
@@ -90,24 +92,5 @@ namespace global_inverse_kinematics_solver{
     }
 
     return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
-  }
-
-  void frame2Variables(const std::vector<double>& frame, const std::vector<cnoid::LinkPtr>& variables){
-    int index = 0;
-    for(int i=0;i<variables.size();i++){
-      if(variables[i]->isRevoluteJoint() || variables[i]->isPrismaticJoint()) {
-        variables[i]->q() = frame[index];
-        index+=1;
-      }else if(variables[i]->isFreeJoint()) {
-        variables[i]->p()[0] = frame[index+0];
-        variables[i]->p()[1] = frame[index+1];
-        variables[i]->p()[2] = frame[index+2];
-        variables[i]->R() = cnoid::Quaternion(frame[index+6],
-                                              frame[index+3],
-                                              frame[index+4],
-                                              frame[index+5]).toRotationMatrix();
-        index+=7;
-      }
-    }
   }
 }
