@@ -215,7 +215,7 @@ namespace global_inverse_kinematics_solver_sample{
       viewer->drawOn(markers);
       viewer->drawObjects();
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     }
 
