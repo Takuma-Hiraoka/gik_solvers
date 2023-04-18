@@ -57,32 +57,41 @@ namespace global_inverse_kinematics_solver{
       solutionPath.print(std::cout);
     }
 
-    simpleSetup.simplifySolution();
-    ompl::geometric::PathGeometric simpleSolutionPath = simpleSetup.getSolutionPath();
-
-    if(param.debugLevel > 0){
-      std::cerr << simpleSolutionPath.check() << std::endl;
-      simpleSolutionPath.print(std::cout);
-    }
-
-    simpleSolutionPath.interpolate();
-    if(param.debugLevel > 0){
-      std::cerr << simpleSolutionPath.check() << std::endl;
-      simpleSolutionPath.print(std::cout);
-    }
-
     if(path != nullptr){
-      path->resize(simpleSolutionPath.getStateCount());
-      for(int i=0;i<simpleSolutionPath.getStateCount();i++){
+      simpleSetup.simplifySolution();
+      solutionPath = simpleSetup.getSolutionPath();
+
+      if(param.debugLevel > 0){
+        std::cerr << solutionPath.check() << std::endl;
+        solutionPath.print(std::cout);
+      }
+
+      solutionPath.interpolate();
+      if(param.debugLevel > 0){
+        std::cerr << solutionPath.check() << std::endl;
+        solutionPath.print(std::cout);
+      }
+
+      // 途中の軌道をpathに入れて返す
+      path->resize(solutionPath.getStateCount());
+      for(int i=0;i<solutionPath.getStateCount();i++){
         //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
         ompl::base::ScopedState<> state(stateSpace);
-        state = simpleSolutionPath.getState(i);
+        state = solutionPath.getState(i);
         std::vector<double> values = state.reals();
         path->at(i).resize(values.size());
         for(int j=0;j<values.size();j++){
           path->at(i)[j] = state[j];
         }
       }
+    }
+
+    // goal stateをvariablesに反映して返す
+    state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1));
+    std::set<cnoid::BodyPtr> bodies = getBodies(variables);
+    for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
+      (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+      (*it)->calcCenterOfMass();
     }
 
     return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;

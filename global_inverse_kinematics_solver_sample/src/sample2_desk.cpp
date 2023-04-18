@@ -199,6 +199,7 @@ namespace global_inverse_kinematics_solver_sample{
       std::vector<cnoid::SgNodePtr> markers;
       for(int j=0;j<constraints.size();j++){
         for(int k=0;k<constraints[j].size(); k++){
+          constraints[j][k]->debugLevel() = 0;
           constraints[j][k]->updateBounds();
           const std::vector<cnoid::SgNodePtr>& marker = constraints[j][k]->getDrawOnObjects();
           std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
