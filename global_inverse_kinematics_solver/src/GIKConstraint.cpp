@@ -2,10 +2,11 @@
 
 namespace global_inverse_kinematics_solver{
   bool GIKConstraint::project(ompl::base::State *state) const{
-    return projectNear(state, state);
+    std::cerr << "GIKConstraint::project" << std::endl;
+    return projectNearValid(state, state);
   }
 
-  bool GIKConstraint::projectNear(ompl::base::State *state, const ompl::base::State *near) const{
+  bool GIKConstraint::projectNearValid(ompl::base::State *state, const ompl::base::State *near) const{
     ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
     state2Link(ambientSpace_, wrapperState->getState(), variables_); // spaceとstateの空間をそろえる
 
