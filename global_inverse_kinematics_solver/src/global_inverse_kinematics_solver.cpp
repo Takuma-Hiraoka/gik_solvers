@@ -35,6 +35,7 @@ namespace global_inverse_kinematics_solver{
       GIKProjectionEvaluatorPtr proj = std::make_shared<GIKProjectionEvaluator>(stateSpace);
       proj->parentLink() = param.projectLink;
       proj->localPos() = param.projectLocalPose;
+      proj->setCellSizes(proj->getDimension(), param.projectCellSize);
       planner->setProjectionEvaluator(proj);
       planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
       simpleSetup.setPlanner(planner);

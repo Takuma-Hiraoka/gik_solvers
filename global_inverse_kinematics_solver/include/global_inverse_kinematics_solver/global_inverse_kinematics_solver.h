@@ -18,6 +18,7 @@ namespace global_inverse_kinematics_solver{
 
     cnoid::LinkPtr projectLink = nullptr;
     cnoid::Position projectLocalPose = cnoid::Position::Identity();
+    double projectCellSize = 0.1; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
   };

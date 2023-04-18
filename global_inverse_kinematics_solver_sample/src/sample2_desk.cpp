@@ -164,6 +164,7 @@ namespace global_inverse_kinematics_solver_sample{
     param.timeout = 30.0;
     param.projectLink = goalRaw->A_link();
     param.projectLocalPose = goalRaw->A_localpos();
+    param.projectCellSize = 0.15; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
     param.viewer = viewer;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
