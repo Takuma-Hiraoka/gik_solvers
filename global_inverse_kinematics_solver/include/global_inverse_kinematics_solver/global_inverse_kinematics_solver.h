@@ -12,6 +12,7 @@ namespace global_inverse_kinematics_solver{
   class GIKParam {
   public:
     int debugLevel = 0;
+
     double timeout = 10.0;
     double delta = 0.2; // planning自体の速さには影響はなく、その後のsimplify, interpolateの速さに影響する. 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる. デフォルトは0.05だが、関節変位のノルムを使う都合上、関節数が多いヒューマノイドではもっと大きい方がいい
     double range = 0.3; // planning自体の速さに影響する.
@@ -22,6 +23,7 @@ namespace global_inverse_kinematics_solver{
     double projectCellSize = 0.15; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
+    unsigned int threads = 1; // 1以上
   };
 
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

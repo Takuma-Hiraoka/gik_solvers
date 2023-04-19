@@ -8,11 +8,44 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
+    std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
+    std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
+    std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
     modelQueue->push(0);
-    return solveGIK(std::vector<std::vector<cnoid::LinkPtr> >{variables},
-                    std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >{constraints},
-                    std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >{goals},
+
+    if(param.threads >= 2){
+      std::set<cnoid::BodyPtr> bodies = getBodies(variables);
+      for(int i=1;i<param.threads;i++){
+        modelQueue->push(i);
+        std::map<cnoid::BodyPtr, cnoid::BodyPtr> modelMap;
+        for(std::set<cnoid::BodyPtr>::iterator it = bodies.begin(); it != bodies.end(); it++){
+          modelMap[*it] = (*it)->clone();
+        }
+        variabless.push_back(std::vector<cnoid::LinkPtr>(variables.size()));
+        for(int v=0;v<variables.size();v++){
+          variabless.back()[v] = modelMap[variables[v]->body()]->link(variables[v]->index());
+        }
+        constraintss.push_back(std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >(constraints.size()));
+        for(int j=0;j<constraints.size();j++){
+          constraintss.back()[j].resize(constraints[j].size());
+          for(int k=0;k<constraints[j].size();k++){
+            constraintss.back()[j][k] = constraints[j][k]->clone(modelMap);
+          }
+        }
+        goalss.push_back(std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >(goals.size()));
+        for(int j=0;j<goals.size();j++){
+          goalss.back()[j].resize(goals[j].size());
+          for(int k=0;k<goals[j].size();k++){
+            goalss.back()[j][k] = goals[j][k]->clone(modelMap);
+          }
+        }
+      }
+    }
+
+    return solveGIK(variabless,
+                    constraintss,
+                    goalss,
                     modelQueue,
                     param,
                     path);
