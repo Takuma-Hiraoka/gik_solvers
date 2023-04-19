@@ -12,13 +12,12 @@ namespace global_inverse_kinematics_solver{
 
   class GIKConstraint : public ompl_near_projection::NearConstraint{
   public:
-    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, const std::vector<cnoid::LinkPtr>& variables) :
+    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables) :
       NearConstraint(1,0,0), // 3つの引数は使われないので適当に与える
       ambientSpace_(ambientSpace),
+      modelQueue_(modelQueue),
       variables_(variables),
-      bodies_(getBodies(variables_)),
-      constraints_(constraints),
-      ikConstraints_(constraints)
+      constraints_(constraints)
     {
       param_.we = 1e2; // 逆運動学が振動しないこと優先. 1e0だと不安定. 1e3だと大きすぎる
       param_.maxIteration = 100; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
@@ -26,7 +25,13 @@ namespace global_inverse_kinematics_solver{
       param_.checkFinalState = true; // ゼロ空間でreference angleに可能な限り近づけるタスクのprecitionは大きくして、常にsatisfiedになることに注意
       param_.calcVelocity = false; // 疎な軌道生成なので、velocityはチェックしない
       param_.convergeThre = 2.5e-2; // 要パラチューン. IKConsraintのmaxErrorより小さくないと、収束誤判定する. maxErrorが5e-2の場合、5e-2だと大きすぎる. 5e-3だと小さすぎて時間がかかる. ikのwe, wn, wmax, maxErrorといったパラメータと連動してパラチューンせよ.
-      ikConstraints_.push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >());
+
+      for(int i=0;i<variables_.size();i++){
+        bodies_.push_back(getBodies(variables_[i]));
+        ikConstraints_.push_back(constraints_[i]);
+        ikConstraints_.back().push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >());
+        tasks_.push_back(std::vector<std::shared_ptr<prioritized_qp_base::Task> >());
+      }
     }
 
     // Constraintクラスでpure virtual関数として定義されているので適当に実態を定義する
@@ -38,20 +43,23 @@ namespace global_inverse_kinematics_solver{
     virtual bool isSatisfied (const ompl::base::State *state) const override;
     virtual bool isSatisfied (const ompl::base::State *state, double *distance) const;
 
-    const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
+    //const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
     std::shared_ptr<choreonoid_viewer::Viewer>& viewer() {return viewer_;}
     const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
-    const std::vector<cnoid::LinkPtr>& variables_;
-    const std::set<cnoid::BodyPtr> bodies_;
-    const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints_;
-    mutable std::vector<std::shared_ptr<prioritized_qp_base::Task> > tasks_;
-    prioritized_inverse_kinematics_solver2::IKParam param_;
 
+    // model queueで管理.
+    mutable std::shared_ptr<UintQueue> modelQueue_;
+    const std::vector<std::vector<cnoid::LinkPtr> >& variables_;
+    const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints_;
+    std::vector<std::set<cnoid::BodyPtr> > bodies_;
+    mutable std::vector<std::vector<std::shared_ptr<prioritized_qp_base::Task> > > tasks_;
     // constraintsの末尾にJointAngleConstraintを加えたもの
-    mutable std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > ikConstraints_;
+    mutable std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > ikConstraints_;
 
+
+    prioritized_inverse_kinematics_solver2::IKParam param_;
     std::shared_ptr<choreonoid_viewer::Viewer> viewer_ = nullptr;
     mutable int loopCount_ = 0;
     int drawLoop_ = 100;

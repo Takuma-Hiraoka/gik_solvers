@@ -155,5 +155,20 @@ namespace global_inverse_kinematics_solver{
   }
 
 
+  void UintQueue::push(const unsigned int& m){
+    {
+      const std::lock_guard<std::mutex> lock(mtx_);
+      queue_.push(m);
+    }
+    cv_.notify_one();
+  }
+
+  unsigned int UintQueue::pop(){
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait(lock, [&] {return !queue_.empty(); });
+    unsigned int ret = std::move(queue_.front());
+    queue_.pop();
+    return ret;
+  }
 };
 

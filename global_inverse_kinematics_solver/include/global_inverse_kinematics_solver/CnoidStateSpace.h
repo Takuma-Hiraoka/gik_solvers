@@ -7,6 +7,9 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <cnoid/Body>
 #include <set>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 namespace global_inverse_kinematics_solver{
 
@@ -41,6 +44,17 @@ namespace global_inverse_kinematics_solver{
     }
     virtual unsigned int getDimension() const override { return 1; }
     virtual void project(const ompl::base::State *state, Eigen::Ref<Eigen::VectorXd> projection) const override {}
+  };
+
+  // 何番目のロボットモデルが空いているか. スレッドセーフにモデルを使うために必要
+  class UintQueue {
+  public:
+    void push(const unsigned int& m);
+    unsigned int pop();
+  protected:
+    std::queue<unsigned int> queue_;
+    std::mutex mtx_;
+    std::condition_variable cv_;
   };
 };
 

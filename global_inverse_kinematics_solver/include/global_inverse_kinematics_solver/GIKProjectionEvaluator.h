@@ -9,26 +9,31 @@ namespace global_inverse_kinematics_solver{
 
   class GIKProjectionEvaluator : public ompl::base::ProjectionEvaluator{
   public:
-    GIKProjectionEvaluator(const ompl::base::StateSpacePtr &space, const std::vector<cnoid::LinkPtr>& variables) :
+    GIKProjectionEvaluator(const ompl::base::StateSpacePtr &space, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<cnoid::LinkPtr> >& variables) :
       ompl::base::ProjectionEvaluator(space),
-      variables_(variables),
-      bodies_(getBodies(variables_))
+      modelQueue_(modelQueue),
+      variables_(variables)
     {
+      for(int i=0;i<variables_.size();i++){
+        bodies_.push_back(getBodies(variables_[i]));
+      }
     }
     virtual unsigned int getDimension(void) const override;
     virtual void defaultCellSizes(void) override;
     virtual void project(const ompl::base::State *st, Eigen::Ref<Eigen::VectorXd> projection) const override;
 
-    cnoid::LinkPtr& parentLink() { return parentLink_; }
-    const cnoid::LinkPtr& parentLink() const { return parentLink_; }
+    std::vector<cnoid::LinkPtr>& parentLink() { return parentLink_; }
+    const std::vector<cnoid::LinkPtr>& parentLink() const { return parentLink_; }
     cnoid::Position& localPos() { return localPos_; }
     const cnoid::Position& localPos() const { return localPos_; }
 
   protected:
-    const std::vector<cnoid::LinkPtr>& variables_;
-    const std::set<cnoid::BodyPtr> bodies_;
+    // model queueで管理.
+    mutable std::shared_ptr<UintQueue> modelQueue_;
+    const std::vector<std::vector<cnoid::LinkPtr> >& variables_;
+    std::vector<std::set<cnoid::BodyPtr> > bodies_;
+    std::vector<cnoid::LinkPtr> parentLink_;
 
-    cnoid::LinkPtr parentLink_;
     cnoid::Position localPos_;
   };
 

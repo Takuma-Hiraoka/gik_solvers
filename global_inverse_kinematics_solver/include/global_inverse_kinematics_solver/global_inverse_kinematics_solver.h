@@ -17,7 +17,7 @@ namespace global_inverse_kinematics_solver{
     double range = 0.3; // planning自体の速さに影響する.
     double goalBias = 0.05; // デフォルトは0.05だが、もっと大きい方がはやく解ける
 
-    cnoid::LinkPtr projectLink = nullptr;
+    std::vector<cnoid::LinkPtr> projectLink;
     cnoid::Position projectLocalPose = cnoid::Position::Identity();
     double projectCellSize = 0.15; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
@@ -29,6 +29,13 @@ namespace global_inverse_kinematics_solver{
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const GIKParam& param = GIKParam(),
+                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
+
+  bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables,
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints,
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& goals,
+                std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param = GIKParam(),
                 std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
 
