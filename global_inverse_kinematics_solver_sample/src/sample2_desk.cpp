@@ -38,7 +38,7 @@ namespace global_inverse_kinematics_solver_sample{
     // load desk
     std::string deskModelfile = ros::package::getPath("global_inverse_kinematics_solver_sample") + "/models/desk.wrl";
     cnoid::BodyPtr desk = bodyLoader.load(deskModelfile);
-    desk->rootLink()->p() = cnoid::Vector3(0.8,0.0,0.71);
+    desk->rootLink()->p() = cnoid::Vector3(0.72,0.0,0.67); // これ以上Zが高いとreset-manip-poseの手と干渉する
     desk->calcForwardKinematics();
     desk->calcCenterOfMass();
 
@@ -123,6 +123,7 @@ namespace global_inverse_kinematics_solver_sample{
       std::shared_ptr<ik_constraint2::COMConstraint> constraint = std::make_shared<ik_constraint2::COMConstraint>();
       constraint->A_robot() = robot;
       constraint->B_localp() = robot->centerOfMass();
+      constraint->weight() << 1.0, 1.0, 0.0; // Z free
       constraints1.push_back(constraint);
     }
 
@@ -137,7 +138,7 @@ namespace global_inverse_kinematics_solver_sample{
       goal->A_link() = robot->link("RARM_WRIST_R");
       goal->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.02);
       goal->B_link() = nullptr;
-      goal->B_localpos().translation() = cnoid::Vector3(0.3,-0.2,0.4); // below desk
+      goal->B_localpos().translation() = cnoid::Vector3(0.4,-0.2,0.3); // below desk
       goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
       goal0.push_back(goal);
 
@@ -152,11 +153,11 @@ namespace global_inverse_kinematics_solver_sample{
       variables.push_back(robot->joint(i));
     }
 
-    for(size_t i=0;i<constraints.size();i++){
-      for(size_t j=0;j<constraints[i].size();j++){
-        constraints[i][j]->debugLevel() = 0;//debug
-      }
-    }
+    // for(size_t i=0;i<constraints.size();i++){
+    //   for(size_t j=0;j<constraints[i].size();j++){
+    //     constraints[i][j]->debugLevel() = 1;//debug
+    //   }
+    // }
     global_inverse_kinematics_solver::GIKParam param;
     param.debugLevel=1;
     param.range = 0.3; // 0.2よりも0.3の方が速い
