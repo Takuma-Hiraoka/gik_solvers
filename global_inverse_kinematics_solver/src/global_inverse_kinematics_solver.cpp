@@ -123,16 +123,41 @@ namespace global_inverse_kinematics_solver{
 
     // attempt to solve the problem within one second of planning time
     simpleSetup.setup();
-    ompl::base::PlannerStatus solved = simpleSetup.solve(param.timeout);
 
-    ompl::geometric::PathGeometric solutionPath = simpleSetup.getSolutionPath();
-
-    if(param.debugLevel > 0){
-      std::cerr << solutionPath.check() << std::endl;
-      solutionPath.print(std::cout);
+    // たまに、サンプル時のIKと補間時のIKが微妙に違うことが原因で、解のpathの補間に失敗する場合があるので、成功するまでとき直す. path.check()と、interpolateやsimplifyのIKは同じものなので、最初のpath.check()が成功すれば、simplifyやinterpolate後のpathも必ずcheck()が成功すると想定.
+    ompl::base::PlannerStatus solved;
+    ompl::geometric::PathGeometric solutionPath(spaceInformation);
+    bool solutionPathCheck = false;
+    for(int trial = 0; trial<param.trial; trial++) {
+      simpleSetup.clear();
+      solved = simpleSetup.solve(param.timeout);
+      solutionPath = simpleSetup.getSolutionPath();
+      if(path == nullptr) {
+        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) break;
+      }else{
+        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) {
+          solutionPathCheck = solutionPath.check();
+          if(solutionPathCheck) break;
+        }
+      }
     }
 
-    if(path != nullptr){
+    if(path == nullptr){
+      // goal stateをvariablesに反映して返す.
+      state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1), variables[0]);
+      std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
+      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
+        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+        (*it)->calcCenterOfMass();
+      }
+
+      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
+    }else{
+      if(param.debugLevel > 0){
+        std::cerr << solutionPath.check() << std::endl;
+        solutionPath.print(std::cout);
+      }
+
       simpleSetup.simplifySolution();
       solutionPath = simpleSetup.getSolutionPath();
 
@@ -153,16 +178,16 @@ namespace global_inverse_kinematics_solver{
         //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
         state2Frame(stateSpace, solutionPath.getState(i), path->at(i));
       }
-    }
 
-    // goal stateをvariablesに反映して返す
-    state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1), variables[0]);
-    std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
-    for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
-      (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
-      (*it)->calcCenterOfMass();
-    }
+      // goal stateをvariablesに反映して返す.
+      state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1), variables[0]);
+      std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
+      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
+        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+        (*it)->calcCenterOfMass();
+      }
 
-    return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
+      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION && solutionPathCheck;
+    }
   }
 }

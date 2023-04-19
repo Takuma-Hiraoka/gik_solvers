@@ -24,7 +24,9 @@ namespace global_inverse_kinematics_solver{
 
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
     unsigned int drawLoop = 100; // スレッド0が、drawLoopに一回描画する
+
     unsigned int threads = 1; // 1以上
+    unsigned int trial = 10; // 1以上. 妥当な解が見つかるまでとき直す
   };
 
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

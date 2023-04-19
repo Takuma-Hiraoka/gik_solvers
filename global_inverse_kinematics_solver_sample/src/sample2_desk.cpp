@@ -159,7 +159,7 @@ namespace global_inverse_kinematics_solver_sample{
     //   }
     // }
     global_inverse_kinematics_solver::GIKParam param;
-    param.debugLevel=1;
+    param.debugLevel=0;
     param.range = 0.3; // 0.2よりも0.3の方が速い
     param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
     param.goalBias = 0.2; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
