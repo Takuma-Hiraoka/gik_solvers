@@ -46,6 +46,8 @@ namespace global_inverse_kinematics_solver{
     //const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
     std::shared_ptr<choreonoid_viewer::Viewer>& viewer() {return viewer_;}
     const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}
+    unsigned int& drawLoop() { return drawLoop_; }
+    const unsigned int& drawLoop() const { return drawLoop_; }
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
 
@@ -62,7 +64,7 @@ namespace global_inverse_kinematics_solver{
     prioritized_inverse_kinematics_solver2::IKParam param_;
     std::shared_ptr<choreonoid_viewer::Viewer> viewer_ = nullptr;
     mutable int loopCount_ = 0;
-    int drawLoop_ = 100;
+    unsigned int drawLoop_ = 100;
   };
 };
 

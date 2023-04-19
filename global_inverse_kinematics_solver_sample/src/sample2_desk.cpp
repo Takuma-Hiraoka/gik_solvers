@@ -167,7 +167,8 @@ namespace global_inverse_kinematics_solver_sample{
     param.projectLocalPose = goalRaw->A_localpos();
     param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
     param.viewer = viewer;
-    param.threads = 1;
+    param.drawLoop = 10;
+    param.threads = 10;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,

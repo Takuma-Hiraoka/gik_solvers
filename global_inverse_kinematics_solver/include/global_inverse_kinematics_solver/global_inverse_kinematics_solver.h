@@ -23,6 +23,7 @@ namespace global_inverse_kinematics_solver{
     double projectCellSize = 0.15; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
+    unsigned int drawLoop = 100; // スレッド0が、drawLoopに一回描画する
     unsigned int threads = 1; // 1以上
   };
 
