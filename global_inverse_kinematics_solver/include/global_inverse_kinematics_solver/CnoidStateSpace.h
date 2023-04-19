@@ -56,6 +56,8 @@ namespace global_inverse_kinematics_solver{
     std::mutex mtx_;
     std::condition_variable cv_;
   };
+
+  ompl::base::StateSamplerPtr allocGIKCompoundStateSampler(const ompl::base::StateSpace *space);
 };
 
 #endif

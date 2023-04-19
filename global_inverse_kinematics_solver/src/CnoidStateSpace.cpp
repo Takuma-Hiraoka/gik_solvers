@@ -130,6 +130,7 @@ namespace global_inverse_kinematics_solver{
         bounds.low = std::vector<double>{variables[i]->p()[0]-1.0,variables[i]->p()[1]-1.0,variables[i]->p()[2]-1.0};
         bounds.high = std::vector<double>{variables[i]->p()[0]+1.0,variables[i]->p()[1]+1.0,variables[i]->p()[2]+1.0};
         se3StateSpace->setBounds(bounds);
+        se3StateSpace->setStateSamplerAllocator(&allocGIKCompoundStateSampler); // weightImportanceを常に1にすることで、plannerのrangeに設定した値だけ各関節(rootLink含む)が均等に動くようになる.
         ambientSpace = ambientSpace + se3StateSpace;
       }
     }
@@ -149,6 +150,7 @@ namespace global_inverse_kinematics_solver{
       ambientSpace = std::make_shared<ompl::base::RealVectorStateSpace>(0);
     }
 
+    ambientSpace->setStateSamplerAllocator(&allocGIKCompoundStateSampler); // weightImportanceを常に1にすることで、plannerのrangeに設定した値だけ各関節(rootLink含む)が均等に動くようになる.
     ambientSpace->registerDefaultProjection(std::make_shared<DummyProjectionEvaluator>(ambientSpace)); // WrapperStateSpace::setup()のときに、ambientSpaceのdefaultProjectionが無いとエラーになる. CompoundStateSpaceにはDefaultProjectionが無いので、とりあえず適当に与えておく
 
     return ambientSpace;
@@ -170,5 +172,14 @@ namespace global_inverse_kinematics_solver{
     queue_.pop();
     return ret;
   }
+
+  // ompl::base::CompoundStateSpace::allocDefaultStateSamplerとの差異は、weightImportanceが常に1である点. デフォルトを使うと、SE3StateSpaceのtranslation, rotationをsampleするときの変位が、関節(RealVectorStateSpace)をsampleするときの半分になってしまい、rootLinkが動きにくくなってしまう.
+  ompl::base::StateSamplerPtr allocGIKCompoundStateSampler(const ompl::base::StateSpace *space) {
+    auto ss(std::make_shared<ompl::base::CompoundStateSampler>(space));
+    for (unsigned int i = 0; i < space->as<ompl::base::CompoundStateSpace>()->getSubspaceCount(); ++i)
+      ss->addSampler(space->as<ompl::base::CompoundStateSpace>()->getSubspace(i)->allocStateSampler(), 1.0/*weights_[i] / weightSum_*/);
+    return ss;
+  }
+
 };
 
