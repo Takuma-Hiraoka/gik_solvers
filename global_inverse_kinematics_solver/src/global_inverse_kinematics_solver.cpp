@@ -12,6 +12,7 @@ namespace global_inverse_kinematics_solver{
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
+    GIKParam param2(param);
     modelQueue->push(0);
 
     if(param.threads >= 2){
@@ -40,6 +41,9 @@ namespace global_inverse_kinematics_solver{
             goalss.back()[j][k] = goals[j][k]->clone(modelMap);
           }
         }
+        if(param.projectLink.size() == 1){
+          param2.projectLink.push_back(modelMap[param.projectLink[0]->body()]->link(param.projectLink[0]->index()));
+        }
       }
     }
 
@@ -47,7 +51,7 @@ namespace global_inverse_kinematics_solver{
                     constraintss,
                     goalss,
                     modelQueue,
-                    param,
+                    param2,
                     path);
   }
 

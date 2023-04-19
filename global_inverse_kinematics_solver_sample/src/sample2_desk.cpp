@@ -161,12 +161,13 @@ namespace global_inverse_kinematics_solver_sample{
     param.debugLevel=1;
     param.range = 0.3; // 0.2よりも0.3の方が速い
     param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
-    param.goalBias = 0.20; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
+    param.goalBias = 0.2; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
     param.timeout = 30.0;
     param.projectLink.push_back(goalRaw->A_link());
     param.projectLocalPose = goalRaw->A_localpos();
     param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
     param.viewer = viewer;
+    param.threads = 1;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
