@@ -3,6 +3,7 @@
 
 #include <ompl_near_projection/NearProjectedStateSpace.h>
 #include <global_inverse_kinematics_solver/CnoidStateSpace.h>
+#include <global_inverse_kinematics_solver/GIKConstraint.h>
 #include <cnoid/Body>
 #include <ik_constraint2/ik_constraint2.h>
 
@@ -11,12 +12,21 @@ namespace global_inverse_kinematics_solver{
 
   class GIKStateSpace : public ompl_near_projection::NearProjectedStateSpace {
   public:
-    GIKStateSpace(const ompl::base::StateSpacePtr &ambientSpace, const ompl_near_projection::NearConstraintPtr &constraint) :
-      NearProjectedStateSpace(ambientSpace, constraint)
+    GIKStateSpace(const ompl::base::StateSpacePtr &ambientSpace, const GIKConstraintPtr &constraint) :
+      NearProjectedStateSpace(ambientSpace, constraint),
+      gikConstraint_(constraint)
     {
     }
 
     void setup() override;
+
+    const GIKConstraintPtr getGIKConstraint() const
+    {
+      return gikConstraint_;
+    }
+
+  protected:
+    const GIKConstraintPtr gikConstraint_;
   };
 };
 

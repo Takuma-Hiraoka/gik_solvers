@@ -6,11 +6,13 @@ namespace global_inverse_kinematics_solver{
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
+    std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > nominalss{nominals};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
     GIKParam param2(param);
     modelQueue->push(0);
@@ -41,6 +43,10 @@ namespace global_inverse_kinematics_solver{
             goalss.back()[j][k] = goals[j][k]->clone(modelMap);
           }
         }
+        nominalss.push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >(nominals.size()));
+        for(int j=0;j<nominals.size();j++){
+          nominalss.back()[j] = nominals[j]->clone(modelMap);
+        }
         if(param.projectLink.size() == 1){
           param2.projectLink.push_back(modelMap[param.projectLink[0]->body()]->link(param.projectLink[0]->index()));
         }
@@ -50,6 +56,7 @@ namespace global_inverse_kinematics_solver{
     return solveGIK(variabless,
                     constraintss,
                     goalss,
+                    nominalss,
                     modelQueue,
                     param2,
                     path);
@@ -58,6 +65,7 @@ namespace global_inverse_kinematics_solver{
   bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables,
                 const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints,
                 const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& goals,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals,
                 std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
@@ -88,7 +96,8 @@ namespace global_inverse_kinematics_solver{
     }
     GIKConstraintPtr goalGIKConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, goalConstraints, variables);
     goalGIKConstraint->viewer() = param.viewer;
-    goalGIKConstraint->drawLoop() = param.drawLoop;;
+    goalGIKConstraint->drawLoop() = param.drawLoop;
+    goalGIKConstraint->nominalConstraints() = nominals;
     GIKStateSpacePtr goalStateSpace = std::make_shared<GIKStateSpace>(ambientSpace, goalGIKConstraint);
     GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation);
     goal->setSpace(goalStateSpace);

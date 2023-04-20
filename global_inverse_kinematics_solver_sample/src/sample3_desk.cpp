@@ -45,7 +45,7 @@ namespace global_inverse_kinematics_solver_sample{
       robot->calcForwardKinematics();
       robot->calcCenterOfMass();
 
-      desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.67); // これ以上Zが高いとreset-manip-poseの手と干渉する
+      desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.5); // これ以上Zが高いとreset-manip-poseの手と干渉する
       desk->calcForwardKinematics();
       desk->calcCenterOfMass();
 
@@ -137,7 +137,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_link() = robot->link("RARM_WRIST_R");
         goal->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.02);
         goal->B_link() = nullptr;
-        goal->B_localpos().translation() = cnoid::Vector3(0.4,-0.2,0.3); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.4,-0.2,0.4); // below desk
         goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
         goal0.push_back(goal);
 
@@ -145,6 +145,18 @@ namespace global_inverse_kinematics_solver_sample{
       }
 
       std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
+
+      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > nominals;
+      {
+        // task: joint angle to target
+        for(int i=0;i<robot->numJoints();i++){
+          std::shared_ptr<ik_constraint2::JointAngleConstraint> constraint = std::make_shared<ik_constraint2::JointAngleConstraint>();
+          constraint->joint() = robot->joint(i);
+          constraint->targetq() = reset_manip_pose[i];
+          constraint->precision() = 1e10; // always satisfied
+          nominals.push_back(constraint);
+        }
+      }
 
       std::vector<cnoid::LinkPtr> variables;
       variables.push_back(robot->rootLink());
@@ -173,6 +185,7 @@ namespace global_inverse_kinematics_solver_sample{
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,
                                                                goals,
+                                                               nominals,
                                                                param,
                                                                path);
 
@@ -185,7 +198,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_link() = robot->link("LARM_WRIST_R");
         goal->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.02);
         goal->B_link() = nullptr;
-        goal->B_localpos().translation() = cnoid::Vector3(0.4,0.2,0.3); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.4,0.2,0.4); // below desk
         goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
         goals[0].push_back(goal);
 
@@ -197,6 +210,7 @@ namespace global_inverse_kinematics_solver_sample{
       bool solved2 = global_inverse_kinematics_solver::solveGIK(variables,
                                                                 constraints,
                                                                 goals,
+                                                                nominals,
                                                                 param,
                                                                 path2);
       std::copy(path2->begin(), path2->end(), std::back_inserter(*path));

@@ -55,6 +55,36 @@ namespace global_inverse_kinematics_solver{
     return solved;
   }
 
+  bool GIKConstraint::projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near) const{
+    const unsigned int m = modelQueue_->pop();
+
+    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperState->getState(), variables_[m]); // spaceとstateの空間をそろえる
+
+    {
+      // setup nearConstraints
+      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominalConstraints = ikConstraints_[m].back();
+      nominalConstraints.resize(nominalConstraints_[m].size());
+      for(int i=0;i<nominalConstraints_[m].size(); i++){
+        nominalConstraints[i] = nominalConstraints_[m][i];
+      }
+    }
+
+    const ompl::base::WrapperStateSpace::StateType* wrapperNear = static_cast<const ompl::base::WrapperStateSpace::StateType*>(near); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
+    state2Link(ambientSpace_, wrapperNear->getState(), variables_[m]); // spaceとstateの空間をそろえる
+
+    bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
+                                                                      ikConstraints_[m],
+                                                                      tasks_[m],
+                                                                      param_);
+
+    link2State(variables_[m], ambientSpace_, wrapperState->getState()); // spaceとstateの空間をそろえる
+
+    modelQueue_->push(m);
+
+    return solved;
+  }
+
   double GIKConstraint::distance (const ompl::base::State *state) const {
     const unsigned int m = modelQueue_->pop();
     const ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<const ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.

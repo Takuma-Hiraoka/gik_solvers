@@ -146,6 +146,18 @@ namespace global_inverse_kinematics_solver_sample{
 
       std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
 
+      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > nominals;
+      {
+        // task: joint angle to target
+        for(int i=0;i<robot->numJoints();i++){
+          std::shared_ptr<ik_constraint2::JointAngleConstraint> constraint = std::make_shared<ik_constraint2::JointAngleConstraint>();
+          constraint->joint() = robot->joint(i);
+          constraint->targetq() = reset_manip_pose[i];
+          constraint->precision() = 1e10; // always satisfied
+          nominals.push_back(constraint);
+        }
+      }
+
       std::vector<cnoid::LinkPtr> variables;
       variables.push_back(robot->rootLink());
       for(size_t i=0;i<robot->numJoints();i++){
@@ -173,6 +185,7 @@ namespace global_inverse_kinematics_solver_sample{
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,
                                                                goals,
+                                                               nominals,
                                                                param,
                                                                path);
       std::cerr << "solved: " << solved << std::endl;
