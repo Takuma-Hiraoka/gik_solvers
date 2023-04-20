@@ -37,7 +37,7 @@ namespace global_inverse_kinematics_solver_sample{
           0.523599, 0.0, 0.0, -1.74533, 0.15708, -0.113446, 0.637045,// rarm
           0.0, -0.349066, 0.0, 0.820305, -0.471239, 0.0,// lleg
           0.523599, 0.0, 0.0, -1.74533, -0.15708, -0.113446, -0.637045,// larm
-          0.0, 0.0, 0.0};
+          0.1, 0.0, 0.0}; // torso. waist-pを少し前に傾けておくと、後ろにひっくり返りにくくなる
 
       for(int j=0; j < robot->numJoints(); ++j){
         robot->joint(j)->q() = reset_manip_pose[j];
@@ -137,7 +137,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_link() = robot->link("RARM_WRIST_R");
         goal->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.02);
         goal->B_link() = nullptr;
-        goal->B_localpos().translation() = cnoid::Vector3(0.4,-0.2,0.4); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.35,-0.25,0.4); // below desk
         goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
         goal0.push_back(goal);
 
@@ -198,7 +198,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_link() = robot->link("LARM_WRIST_R");
         goal->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.02);
         goal->B_link() = nullptr;
-        goal->B_localpos().translation() = cnoid::Vector3(0.4,0.2,0.4); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.35,0.25,0.4); // below desk
         goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
         goals[0].push_back(goal);
 
