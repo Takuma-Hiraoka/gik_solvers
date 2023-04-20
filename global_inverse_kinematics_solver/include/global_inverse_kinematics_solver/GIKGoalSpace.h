@@ -14,13 +14,7 @@ namespace global_inverse_kinematics_solver{
 
     virtual bool isSatisfied(const ompl::base::State *st, double *distance) const override;
 
-    bool sampleTo(ompl::base::State *state, const ompl::base::State *source) const override{
-      GIKStateSpacePtr goalSpaceNear = std::static_pointer_cast<GIKStateSpace>(goalSpace_); // goal spaceは、GIKStateSpaceであるという想定. 本当はGoalSpace::setSpace時にcastして保管しておきたいのだが、GoalSpace::setSpaceがvirtual関数として宣言されていないのでできなかった.
-      bool ret = goalSpaceNear->getGIKConstraint()->projectNearValidWithNominal(state, source);
-      si_->enforceBounds(state);
-
-    }
-
+    bool sampleTo(ompl::base::State *state, const ompl::base::State *source) const override;
   };
 };
 
