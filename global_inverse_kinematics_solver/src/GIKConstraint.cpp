@@ -9,8 +9,7 @@ namespace global_inverse_kinematics_solver{
   bool GIKConstraint::projectNearValid(ompl::base::State *state, const ompl::base::State *near) const{
     const unsigned int m = modelQueue_->pop();
 
-    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
-    state2Link(ambientSpace_, wrapperState->getState(), variables_[m]); // spaceとstateの空間をそろえる
+    state2Link(stateSpace_, state, variables_[m]); // spaceとstateの空間をそろえる
 
     {
       // setup nearConstraints
@@ -40,15 +39,28 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
-    const ompl::base::WrapperStateSpace::StateType* wrapperNear = static_cast<const ompl::base::WrapperStateSpace::StateType*>(near); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
-    state2Link(ambientSpace_, wrapperNear->getState(), variables_[m]); // spaceとstateの空間をそろえる
+    state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
 
+    std::shared_ptr<std::vector<std::vector<double> > > path;
+    ompl_near_projection::NearProjectedStateSpace::StateType* tmp_state = dynamic_cast<ompl_near_projection::NearProjectedStateSpace::StateType*>(state);
+    if(tmp_state) path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
                                                                       ikConstraints_[m],
                                                                       tasks_[m],
-                                                                      param_);
+                                                                      param_,
+                                                                      path);
 
-    link2State(variables_[m], ambientSpace_, wrapperState->getState()); // spaceとstateの空間をそろえる
+    link2State(variables_[m], stateSpace_, state); // spaceとstateの空間をそろえる
+
+    if(tmp_state) {
+      for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
+      tmp_state->intermediateStates.clear();
+      for(int i=1;i+1<path->size();i++){ // 始点と終点を含まない
+        ompl::base::State* st = stateSpace_->allocState();
+        frame2State(path->at(i), stateSpace_, st);
+        tmp_state->intermediateStates.push_back(st);
+      }
+    }
 
     modelQueue_->push(m);
 
@@ -58,8 +70,7 @@ namespace global_inverse_kinematics_solver{
   bool GIKConstraint::projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near) const{
     const unsigned int m = modelQueue_->pop();
 
-    ompl::base::WrapperStateSpace::StateType* wrapperState = static_cast<ompl::base::WrapperStateSpace::StateType*>(state); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
-    state2Link(ambientSpace_, wrapperState->getState(), variables_[m]); // spaceとstateの空間をそろえる
+    state2Link(stateSpace_, state, variables_[m]); // spaceとstateの空間をそろえる
 
     {
       // setup nearConstraints
@@ -70,15 +81,28 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
-    const ompl::base::WrapperStateSpace::StateType* wrapperNear = static_cast<const ompl::base::WrapperStateSpace::StateType*>(near); // stateは, このConstraintをもったWrapperStateSpaceのstateであるはずなので.
-    state2Link(ambientSpace_, wrapperNear->getState(), variables_[m]); // spaceとstateの空間をそろえる
+    state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
 
+    std::shared_ptr<std::vector<std::vector<double> > > path;
+    ompl_near_projection::NearProjectedStateSpace::StateType* tmp_state = dynamic_cast<ompl_near_projection::NearProjectedStateSpace::StateType*>(state);
+    if(tmp_state) path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
                                                                       ikConstraints_[m],
                                                                       tasks_[m],
-                                                                      param_);
+                                                                      param_,
+                                                                      path);
 
-    link2State(variables_[m], ambientSpace_, wrapperState->getState()); // spaceとstateの空間をそろえる
+    link2State(variables_[m], stateSpace_, state); // spaceとstateの空間をそろえる
+
+    if(tmp_state) {
+      for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
+      tmp_state->intermediateStates.clear();
+      for(int i=1;i+1<path->size();i++){ // 始点と終点を含まない
+        ompl::base::State* st = stateSpace_->allocState();
+        frame2State(path->at(i), stateSpace_, st);
+        tmp_state->intermediateStates.push_back(st);
+      }
+    }
 
     modelQueue_->push(m);
 

@@ -211,22 +211,22 @@ namespace global_inverse_kinematics_solver_sample{
 
       std::cerr << "solved: " << solved2 << std::endl;
 
-      for(size_t i=0;i<constraints.size();i++){
-        for(size_t j=0;j<constraints[i].size();j++){
-          constraints[i][j]->debugLevel() = 0;//not debug
-          constraints[i][j]->updateBounds();
-          if(constraints[i][j]->isSatisfied()) std::cerr << "constraint " << i << " " << j << ": satisfied"<< std::endl;
-          else std::cerr << "constraint " << i << " " << j << ": NOT satisfied"<< std::endl;
-        }
-      }
-      for(size_t i=0;i<goals.size();i++){
-        for(size_t j=0;j<goals[i].size();j++){
-          goals[i][j]->debugLevel() = 0;//not debug
-          goals[i][j]->updateBounds();
-          if(goals[i][j]->isSatisfied()) std::cerr << "goal " << i << " " << j << ": satisfied"<< std::endl;
-          else std::cerr << "goal " << i << " " << j << ": NOT satisfied"<< std::endl;
-        }
-      }
+      // for(size_t i=0;i<constraints.size();i++){
+      //   for(size_t j=0;j<constraints[i].size();j++){
+      //     constraints[i][j]->debugLevel() = 0;//not debug
+      //     constraints[i][j]->updateBounds();
+      //     if(constraints[i][j]->isSatisfied()) std::cerr << "constraint " << i << " " << j << ": satisfied"<< std::endl;
+      //     else std::cerr << "constraint " << i << " " << j << ": NOT satisfied"<< std::endl;
+      //   }
+      // }
+      // for(size_t i=0;i<goals.size();i++){
+      //   for(size_t j=0;j<goals[i].size();j++){
+      //     goals[i][j]->debugLevel() = 0;//not debug
+      //     goals[i][j]->updateBounds();
+      //     if(goals[i][j]->isSatisfied()) std::cerr << "goal " << i << " " << j << ": satisfied"<< std::endl;
+      //     else std::cerr << "goal " << i << " " << j << ": NOT satisfied"<< std::endl;
+      //   }
+      // }
 
       // main loop
       for(int i=0;i<path->size();i++){

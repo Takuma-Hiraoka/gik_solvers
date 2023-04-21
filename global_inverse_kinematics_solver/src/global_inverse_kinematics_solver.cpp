@@ -143,13 +143,42 @@ namespace global_inverse_kinematics_solver{
       simpleSetup.clear();
       solved = simpleSetup.solve(param.timeout);
       solutionPath = simpleSetup.getSolutionPath();
-      if(path == nullptr) {
+
+      if(path==nullptr){
         if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) break;
       }else{
-        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) {
-          solutionPathCheck = solutionPath.check();
-          if(solutionPathCheck) break;
+        if(param.debugLevel > 0){
+          std::cerr << solutionPath.check() << std::endl;
+          solutionPath.print(std::cout);
         }
+
+        simpleSetup.simplifySolution();
+        solutionPath = simpleSetup.getSolutionPath();
+
+        if(param.debugLevel > 0){
+          std::cerr << solutionPath.check() << std::endl;
+          solutionPath.print(std::cout);
+        }
+
+        solutionPath.interpolate();
+        if(param.debugLevel > 0){
+          std::cerr << solutionPath.check() << std::endl;
+          solutionPath.print(std::cout);
+        }
+
+        // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになることがあって、それは許容したい.
+        // 一方で、補間失敗は許容できない
+        // solutionPath.check()ではなく手動でチェックする
+        //   interpolate時にintermidiatestateを用いて補間するので、interpolate誤でないとcheck()は使えないことに注意
+        solutionPathCheck = true;
+        for(int p=0;p+1<solutionPath.getStateCount();p++){
+          if(stateSpace->distance(solutionPath.getState(p), solutionPath.getState(p+1)) > stateSpace->getDelta() * stateSpace->getLambda()) {
+            solutionPathCheck = false;
+            break;
+          }
+        }
+
+        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION && solutionPathCheck) break;
       }
     }
 
@@ -164,24 +193,6 @@ namespace global_inverse_kinematics_solver{
 
       return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
     }else{
-      if(param.debugLevel > 0){
-        std::cerr << solutionPath.check() << std::endl;
-        solutionPath.print(std::cout);
-      }
-
-      simpleSetup.simplifySolution();
-      solutionPath = simpleSetup.getSolutionPath();
-
-      if(param.debugLevel > 0){
-        std::cerr << solutionPath.check() << std::endl;
-        solutionPath.print(std::cout);
-      }
-
-      solutionPath.interpolate();
-      if(param.debugLevel > 0){
-        std::cerr << solutionPath.check() << std::endl;
-        solutionPath.print(std::cout);
-      }
 
       // 途中の軌道をpathに入れて返す
       path->resize(solutionPath.getStateCount());
