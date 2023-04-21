@@ -78,6 +78,7 @@ namespace global_inverse_kinematics_solver{
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables[0]);
     GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables);
+    gikConstraint->param() = param.pikParam;
     GIKStateSpacePtr stateSpace = std::make_shared<GIKStateSpace>(ambientSpace, gikConstraint);
     stateSpace->setDelta(param.delta); // この距離内のstateは、中間のconstraintチェック無しで遷移可能
     ompl_near_projection::NearConstrainedSpaceInformationPtr spaceInformation = std::make_shared<ompl_near_projection::NearConstrainedSpaceInformation>(stateSpace);
@@ -98,6 +99,7 @@ namespace global_inverse_kinematics_solver{
     goalGIKConstraint->viewer() = param.viewer;
     goalGIKConstraint->drawLoop() = param.drawLoop;
     goalGIKConstraint->nominalConstraints() = nominals;
+    goalGIKConstraint->param() = param.pikParam;
     GIKStateSpacePtr goalStateSpace = std::make_shared<GIKStateSpace>(ambientSpace, goalGIKConstraint);
     GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation);
     goal->setSpace(goalStateSpace);

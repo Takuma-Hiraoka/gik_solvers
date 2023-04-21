@@ -27,6 +27,17 @@ namespace global_inverse_kinematics_solver{
 
     unsigned int threads = 1; // 1以上
     unsigned int trial = 10; // 1以上. 妥当な解が見つかるまでとき直す
+
+    prioritized_inverse_kinematics_solver2::IKParam pikParam;
+
+    GIKParam(){
+      pikParam.we = 1e2; // 逆運動学が振動しないこと優先. 1e0だと不安定. 1e3だと大きすぎる
+      pikParam.maxIteration = 100; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
+      pikParam.minIteration = 100;
+      pikParam.checkFinalState = true; // ゼロ空間でreference angleに可能な限り近づけるタスクのprecitionは大きくして、常にsatisfiedになることに注意
+      pikParam.calcVelocity = false; // 疎な軌道生成なので、velocityはチェックしない
+      pikParam.convergeThre = 2.5e-2; // 要パラチューン. IKConsraintのmaxErrorより小さくないと、収束誤判定する. maxErrorが5e-2の場合、5e-2だと大きすぎる. 5e-3だと小さすぎて時間がかかる. ikのwe, wn, wmax, maxErrorといったパラメータと連動してパラチューンせよ.
+    }
   };
 
   // goalsはconstraintsを含まない. 実際のgoalは、constraintsの末尾にgoalsが追加されたものになる

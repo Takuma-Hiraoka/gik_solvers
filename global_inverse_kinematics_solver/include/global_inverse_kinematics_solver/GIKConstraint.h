@@ -19,12 +19,7 @@ namespace global_inverse_kinematics_solver{
       variables_(variables),
       constraints_(constraints)
     {
-      param_.we = 1e2; // 逆運動学が振動しないこと優先. 1e0だと不安定. 1e3だと大きすぎる
-      param_.maxIteration = 100; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
-      param_.minIteration = 100;
-      param_.checkFinalState = true; // ゼロ空間でreference angleに可能な限り近づけるタスクのprecitionは大きくして、常にsatisfiedになることに注意
-      param_.calcVelocity = false; // 疎な軌道生成なので、velocityはチェックしない
-      param_.convergeThre = 2.5e-2; // 要パラチューン. IKConsraintのmaxErrorより小さくないと、収束誤判定する. maxErrorが5e-2の場合、5e-2だと大きすぎる. 5e-3だと小さすぎて時間がかかる. ikのwe, wn, wmax, maxErrorといったパラメータと連動してパラチューンせよ.
+
 
       for(int i=0;i<variables_.size();i++){
         bodies_.push_back(getBodies(variables_[i]));
@@ -52,6 +47,8 @@ namespace global_inverse_kinematics_solver{
     const unsigned int& drawLoop() const { return drawLoop_; }
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominalConstraints() { return nominalConstraints_; } // nominalConstraintsのisSatisfiedは常にtrueを返す必要がある
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominalConstraints() const { return nominalConstraints_; }
+    prioritized_inverse_kinematics_solver2::IKParam& param() { return param_;}
+    const prioritized_inverse_kinematics_solver2::IKParam& param() const { return param_; }
   protected:
     const ompl::base::StateSpacePtr ambientSpace_;
 
