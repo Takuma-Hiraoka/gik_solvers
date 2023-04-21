@@ -67,7 +67,7 @@ namespace global_inverse_kinematics_solver_sample{
     while(true){
 
       // reset manip pose
-      robot->rootLink()->p() = cnoid::Vector3(0,0,0.8);
+      robot->rootLink()->p() = cnoid::Vector3(0,0,1.0);
       robot->rootLink()->v().setZero();
       robot->rootLink()->R() = cnoid::Matrix3::Identity();
       robot->rootLink()->w().setZero();
@@ -88,7 +88,7 @@ namespace global_inverse_kinematics_solver_sample{
       robot->calcForwardKinematics();
       robot->calcCenterOfMass();
 
-      desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.5); // これ以上Zが高いとreset-manip-poseの手と干渉する
+      desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.7); // これ以上Zが高いとreset-manip-poseの手と干渉する
       desk->calcForwardKinematics();
       desk->calcCenterOfMass();
 
@@ -132,7 +132,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_localpos().translation() = cnoid::Vector3(0.0,0.055,-0.217);
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
         goal->B_link() = nullptr;
-        goal->B_localpos().translation() = cnoid::Vector3(0.55,-0.25,0.25); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.55,-0.25,0.45); // below desk
         goal0.push_back(goal);
 
         goalRaw = goal;
@@ -166,7 +166,7 @@ namespace global_inverse_kinematics_solver_sample{
       global_inverse_kinematics_solver::GIKParam param;
       param.debugLevel=0;
       param.range = 0.3; // 0.2よりも0.3の方が速い
-      param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる.
+      param.delta = 0.4; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる.
       param.goalBias = 0.2; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
       param.timeout = 30.0;
       param.projectLink.push_back(goalRaw->A_link());
@@ -175,6 +175,7 @@ namespace global_inverse_kinematics_solver_sample{
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 10;
+      param.pikParam.we = 3e2;
       std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,
@@ -192,7 +193,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_link() = robot->link("LARM_JOINT7");
         goal->A_localpos().translation() = cnoid::Vector3(0.0,-0.055,-0.217);
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
-        goal->B_localpos().translation() = cnoid::Vector3(0.55,0.25,0.25); // below desk
+        goal->B_localpos().translation() = cnoid::Vector3(0.55,0.25,0.45); // below desk
         goals[0].push_back(goal);
 
         goalRaw = goal;
