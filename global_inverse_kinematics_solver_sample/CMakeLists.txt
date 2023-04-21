@@ -51,6 +51,7 @@ add_library(CnoidGlobalInverseKinematicsSolverSamplePlugin SHARED
   src/sample1_4limb.cpp
   src/sample2_desk.cpp
   src/sample3_desk.cpp
+  src/sample4_jaxon.cpp
 )
 target_link_libraries(CnoidGlobalInverseKinematicsSolverSamplePlugin
   ${catkin_LIBRARIES}
