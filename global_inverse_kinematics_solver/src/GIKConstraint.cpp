@@ -55,7 +55,7 @@ namespace global_inverse_kinematics_solver{
     if(tmp_state) {
       for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
       tmp_state->intermediateStates.clear();
-      for(int i=1;i+1<path->size();i++){ // 始点と終点を含まない
+      for(int i=0;i+1<path->size();i++){ // 終点を含まない
         ompl::base::State* st = stateSpace_->allocState();
         frame2State(path->at(i), stateSpace_, st);
         tmp_state->intermediateStates.push_back(st);
@@ -97,7 +97,7 @@ namespace global_inverse_kinematics_solver{
     if(tmp_state) {
       for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
       tmp_state->intermediateStates.clear();
-      for(int i=1;i+1<path->size();i++){ // 始点と終点を含まない
+      for(int i=0;i+1<path->size();i++){ // 終点を含まない
         ompl::base::State* st = stateSpace_->allocState();
         frame2State(path->at(i), stateSpace_, st);
         tmp_state->intermediateStates.push_back(st);

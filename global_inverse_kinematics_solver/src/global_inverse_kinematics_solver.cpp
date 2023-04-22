@@ -138,7 +138,6 @@ namespace global_inverse_kinematics_solver{
     // たまに、サンプル時のIKと補間時のIKが微妙に違うことが原因で、解のpathの補間に失敗する場合があるので、成功するまでとき直す. path.check()と、interpolateやsimplifyのIKは同じものなので、最初のpath.check()が成功すれば、simplifyやinterpolate後のpathも必ずcheck()が成功すると想定.
     ompl::base::PlannerStatus solved;
     ompl::geometric::PathGeometric solutionPath(spaceInformation);
-    bool solutionPathCheck = false;
     for(int trial = 0; trial<param.trial; trial++) {
       simpleSetup.clear();
       solved = simpleSetup.solve(param.timeout);
@@ -166,19 +165,10 @@ namespace global_inverse_kinematics_solver{
           solutionPath.print(std::cout);
         }
 
-        // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになることがあって、それは許容したい.
-        // 一方で、補間失敗は許容できない
-        // solutionPath.check()ではなく手動でチェックする
-        //   interpolate時にintermidiatestateを用いて補間するので、interpolate誤でないとcheck()は使えないことに注意
-        solutionPathCheck = true;
-        for(int p=0;p+1<solutionPath.getStateCount();p++){
-          if(stateSpace->distance(solutionPath.getState(p), solutionPath.getState(p+1)) > stateSpace->getDelta() * stateSpace->getLambda()) {
-            solutionPathCheck = false;
-            break;
-          }
-        }
-
-        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION && solutionPathCheck) break;
+        // IKの途中経過を使っているので、EXACT_SOLUTIONなら、必ずinterpolateできている.
+        // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになっていたり、deltaを上回った距離になっていることがあって、それは許容したい.
+        // solutionPath.check()は行わない
+        if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) break;
       }
     }
 
@@ -209,7 +199,7 @@ namespace global_inverse_kinematics_solver{
         (*it)->calcCenterOfMass();
       }
 
-      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION && solutionPathCheck;
+      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
     }
   }
 }
