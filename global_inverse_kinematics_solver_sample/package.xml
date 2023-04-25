@@ -11,7 +11,9 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>ik_constraint2</depend>
   <depend>ik_constraint2_vclip</depend>
+  <depend>ik_constraint2_distance_field</depend>
   <depend>global_inverse_kinematics_solver</depend>
+  <depend>prioritized_inverse_kinematics_solver2_sample</depend> <!-- choreonoid起動時に全てのプラグインを自動でロードしてしまうので、依存先のライブラリに更新があった場合、それに依存する全てのプラグインをビルドし直さないと、Choreonoidのクラッシュを引き起こす等の問題を起こすことがある https://choreonoid.org/ja/manuals/latest/basics/plugin.html -->
   <depend>choreonoid_viewer</depend>
 
 </package>

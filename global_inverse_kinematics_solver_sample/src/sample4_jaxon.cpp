@@ -8,6 +8,7 @@
 #include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
 #include <ik_constraint2/ik_constraint2.h>
 #include <ik_constraint2_vclip/ik_constraint2_vclip.h>
+#include <ik_constraint2_distance_field/ik_constraint2_distance_field.h>
 
 namespace global_inverse_kinematics_solver_sample{
   void sample4_jaxon(){
@@ -21,6 +22,10 @@ namespace global_inverse_kinematics_solver_sample{
     // load desk
     std::string deskModelfile = ros::package::getPath("global_inverse_kinematics_solver_sample") + "/models/desk.wrl";
     cnoid::BodyPtr desk = bodyLoader.load(deskModelfile);
+
+    desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.7); // これ以上Zが高いとreset-manip-poseの手と干渉する
+    desk->calcForwardKinematics();
+    desk->calcCenterOfMass();
 
     // setup viewer
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = std::make_shared<choreonoid_viewer::Viewer>();
@@ -48,20 +53,42 @@ namespace global_inverse_kinematics_solver_sample{
         constraint->A_link() = robot->link(pairs[i][0]);
         constraint->B_link() = robot->link(pairs[i][1]);
         constraint->tolerance() = 0.01;
+        constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
         constraints0.push_back(constraint);
       }
     }
 
     {
       // task: env collision
+      std::shared_ptr<distance_field::PropagationDistanceField> field = std::make_shared<distance_field::PropagationDistanceField>(3,//size_x
+                                                                                                                                   3,//size_y
+                                                                                                                                   3,//size_z
+                                                                                                                                   0.02,//resolution
+                                                                                                                                   -1.5,//origin_x
+                                                                                                                                   -1.5,//origin_y
+                                                                                                                                   -1.5,//origin_z
+                                                                                                                                   0.5, // max_distance
+                                                                                                                                   false// propagate_negative_distances
+                                                                                                                                   );
+      EigenSTL::vector_Vector3d vertices;
+      for(int i=0;i<desk->numLinks();i++){
+        std::vector<Eigen::Vector3f> vertices_ = ik_constraint2_distance_field::getSurfaceVertices(desk->link(i), 0.02);
+        for(int j=0;j<vertices_.size();j++){
+          vertices.push_back(desk->link(i)->T() * vertices_[j].cast<double>());
+        }
+      }
+      field->addPointsToField(vertices);
       for(int i=0;i<robot->numLinks();i++){
-        std::shared_ptr<ik_constraint2_vclip::VclipCollisionConstraint> constraint = std::make_shared<ik_constraint2_vclip::VclipCollisionConstraint>();
+        std::shared_ptr<ik_constraint2_distance_field::DistanceFieldCollisionConstraint> constraint = std::make_shared<ik_constraint2_distance_field::DistanceFieldCollisionConstraint>();
         constraint->A_link() = robot->link(i);
-        constraint->B_link() = desk->rootLink();
+        constraint->field() = field;
         constraint->tolerance() = 0.03;
+        constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
         constraints0.push_back(constraint);
+
       }
     }
+
 
 
     while(true){
@@ -87,10 +114,6 @@ namespace global_inverse_kinematics_solver_sample{
       }
       robot->calcForwardKinematics();
       robot->calcCenterOfMass();
-
-      desk->rootLink()->p() = cnoid::Vector3(0.9,0.0,0.7); // これ以上Zが高いとreset-manip-poseの手と干渉する
-      desk->calcForwardKinematics();
-      desk->calcCenterOfMass();
 
       std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > constraints1;
       {
