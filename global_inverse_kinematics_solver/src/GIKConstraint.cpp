@@ -24,6 +24,7 @@ namespace global_inverse_kinematics_solver{
           constraint->joint() = variables_[m][i];
           constraint->targetq() = variables_[m][i]->q();
           constraint->precision() = 1e10; // always satisfied
+          constraint->maxError() = nearMaxError_;
 
         }else if(variables_[m][i]->isFreeJoint()) {
           std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::dynamic_pointer_cast<ik_constraint2::PositionConstraint>(nearConstraints[i]);
@@ -33,6 +34,7 @@ namespace global_inverse_kinematics_solver{
           constraint->A_link() = variables_[m][i];
           constraint->B_localpos() = variables_[m][i]->T();
           constraint->precision() = 1e10; // always satisfied
+          constraint->maxError() << nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_;
         }else{
           std::cerr << "[GIKConstraint::projectNear] something is wrong" << std::endl;
         }

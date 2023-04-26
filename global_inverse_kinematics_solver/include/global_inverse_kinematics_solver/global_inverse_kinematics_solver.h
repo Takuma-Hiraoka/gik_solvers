@@ -11,12 +11,12 @@
 namespace global_inverse_kinematics_solver{
   class GIKParam {
   public:
-    int debugLevel = 0;
+    int debugLevel = 0; // 0: no debug message. 1: time measure. 2: internal state
 
     double timeout = 10.0;
     double delta = 0.2; // planning自体の速さには影響はなく、その後のsimplify, interpolateの速さに影響する. 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる. デフォルトは0.05だが、関節変位のノルムを使う都合上、関節数が多いヒューマノイドではもっと大きい方がいい
     double range = 0.3; // planning自体の速さに影響する.
-    double goalBias = 0.05; // デフォルトは0.05だが、もっと大きい方がはやく解ける
+    double goalBias = 0.05; // デフォルトは0.05だが、もっと大きい方がはやく解ける. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
 
     std::vector<cnoid::LinkPtr> projectLink;
     cnoid::Position projectLocalPose = cnoid::Position::Identity();
@@ -29,10 +29,11 @@ namespace global_inverse_kinematics_solver{
     unsigned int trial = 10; // 1以上. 妥当な解が見つかるまでとき直す
 
     prioritized_inverse_kinematics_solver2::IKParam pikParam;
+    double nearMaxError = 0.05; // sampleNear時のjointAngleConstraintのmaxError. // 大きいとタスクが達成できない場合に不安定になりやすいが、小さいとIKのloopが多く必要になって遅くなる. 各constraintのmaxErrorも同じ値にせよ
 
     GIKParam(){
       pikParam.we = 1e2; // 逆運動学が振動しないこと優先. 1e0だと不安定. 1e3だと大きすぎる
-      pikParam.maxIteration = 100; // 200 iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので.
+      pikParam.maxIteration = 100; // max iterationに達するか、convergeしたら終了する. isSatisfiedでは終了しない. ゼロ空間でreference angleに可能な限り近づけるタスクがあるので. 1 iterationで0.5msくらいかかるので、stateを1つ作るための時間の上限が見積もれる. 一見、この値を小さくすると早くなりそうだが、goalSampling時に本当はgoalに到達できるのにその前に返ってしまうことで遅くなることがあるため、少ないiterationでも収束するように他のパラメータを調整したほうがいい
       pikParam.minIteration = 100;
       pikParam.checkFinalState = true; // ゼロ空間でreference angleに可能な限り近づけるタスクのprecitionは大きくして、常にsatisfiedになることに注意
       pikParam.calcVelocity = false; // 疎な軌道生成なので、velocityはチェックしない

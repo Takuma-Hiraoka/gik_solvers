@@ -45,6 +45,8 @@ namespace global_inverse_kinematics_solver{
     const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}
     unsigned int& drawLoop() { return drawLoop_; }
     const unsigned int& drawLoop() const { return drawLoop_; }
+    double& nearMaxError() { return nearMaxError_; }
+    const double& nearMaxError() const { return nearMaxError_; }
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominalConstraints() { return nominalConstraints_; } // nominalConstraintsのisSatisfiedは常にtrueを返す必要がある
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominalConstraints() const { return nominalConstraints_; }
     prioritized_inverse_kinematics_solver2::IKParam& param() { return param_;}
@@ -66,6 +68,7 @@ namespace global_inverse_kinematics_solver{
     std::shared_ptr<choreonoid_viewer::Viewer> viewer_ = nullptr;
     mutable int loopCount_ = 0;
     unsigned int drawLoop_ = 100;
+    double nearMaxError_ = 0.05;
   };
 };
 

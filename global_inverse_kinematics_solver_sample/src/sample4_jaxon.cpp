@@ -156,6 +156,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
         goal->B_link() = nullptr;
         goal->B_localpos().translation() = cnoid::Vector3(0.55,-0.25,0.45); // below desk
+        //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
         goal0.push_back(goal);
 
         goalRaw = goal;
@@ -171,6 +172,7 @@ namespace global_inverse_kinematics_solver_sample{
           constraint->joint() = robot->joint(i);
           constraint->targetq() = reset_manip_pose[i];
           constraint->precision() = 1e10; // always satisfied
+          //constraint->maxError() = 0.1;
           nominals.push_back(constraint);
         }
       }
@@ -198,7 +200,12 @@ namespace global_inverse_kinematics_solver_sample{
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 10;
-      param.pikParam.we = 3e2;
+      //param.pikParam.we = 5e2;
+      //param.pikParam.wmax = 1e0;
+      param.pikParam.convergeThre = 5e-2; // 2.5e-2は小さすぎる. param.pikParam.debugLevel = 1にして観察せよ
+      param.pikParam.debugLevel = 0;
+      param.pikParam.pathOutputLoop = 5;
+      //param.nearMaxError = 0.1; // 0.05でも0.1でもそんなに変わらない. 0.1だとQPが不安定になりやすい. 各constraintのmaxErrorも同じ値にせよ
       std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,
@@ -217,6 +224,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_localpos().translation() = cnoid::Vector3(0.0,-0.055,-0.217);
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
         goal->B_localpos().translation() = cnoid::Vector3(0.55,0.25,0.45); // below desk
+        //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
         goals[0].push_back(goal);
 
         goalRaw = goal;
