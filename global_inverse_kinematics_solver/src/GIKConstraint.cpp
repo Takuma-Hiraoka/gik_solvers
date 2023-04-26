@@ -6,7 +6,7 @@ namespace global_inverse_kinematics_solver{
     return projectNearValid(state, state);
   }
 
-  bool GIKConstraint::projectNearValid(ompl::base::State *state, const ompl::base::State *near) const{
+  bool GIKConstraint::projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance) const{
     const unsigned int m = modelQueue_->pop();
 
     state2Link(stateSpace_, state, variables_[m]); // spaceとstateの空間をそろえる
@@ -64,6 +64,17 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
+    if(distance != nullptr){
+      double squaredDistance = 0.0;
+      for(size_t i=0;i<constraints_[m].size();i++){
+        for(size_t j=0;j<constraints_[m][i].size();j++){
+          //constraints_[m][i][j]->updateBounds();
+          squaredDistance += std::pow(constraints_[m][i][j]->distance(), 2.0);
+        }
+      }
+      *distance = std::sqrt(squaredDistance);
+    }
+
     if(viewer_ != nullptr && m==0){
       loopCount_++;
       if(loopCount_%drawLoop_==0){
@@ -84,7 +95,7 @@ namespace global_inverse_kinematics_solver{
     return solved;
   }
 
-  bool GIKConstraint::projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near) const{
+  bool GIKConstraint::projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near, double* distance) const{
     const unsigned int m = modelQueue_->pop();
 
     state2Link(stateSpace_, state, variables_[m]); // spaceとstateの空間をそろえる
@@ -119,6 +130,17 @@ namespace global_inverse_kinematics_solver{
         frame2State(path->at(i), stateSpace_, st);
         tmp_state->intermediateStates.push_back(st);
       }
+    }
+
+    if(distance != nullptr){
+      double squaredDistance = 0.0;
+      for(size_t i=0;i<constraints_[m].size();i++){
+        for(size_t j=0;j<constraints_[m][i].size();j++){
+          //constraints_[m][i][j]->updateBounds();
+          squaredDistance += std::pow(constraints_[m][i][j]->distance(), 2.0);
+        }
+      }
+      *distance = std::sqrt(squaredDistance);
     }
 
     if(viewer_ != nullptr && m==0){

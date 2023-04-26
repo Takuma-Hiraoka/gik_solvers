@@ -34,8 +34,8 @@ namespace global_inverse_kinematics_solver{
     void function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out) const override {return ;}
 
     virtual bool project(ompl::base::State *state) const override;
-    virtual bool projectNearValid(ompl::base::State *state, const ompl::base::State *near) const override;
-    virtual bool projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near) const;
+    virtual bool projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance = nullptr) const override;
+    virtual bool projectNearValidWithNominal(ompl::base::State *state, const ompl::base::State *near, double* distance = nullptr) const;
     virtual double distance (const ompl::base::State *state) const override;
     virtual bool isSatisfied (const ompl::base::State *state) const override;
     virtual bool isSatisfied (const ompl::base::State *state, double *distance) const;

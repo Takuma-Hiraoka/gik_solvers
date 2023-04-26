@@ -14,7 +14,7 @@ namespace global_inverse_kinematics_solver{
 
     virtual bool isSatisfied(const ompl::base::State *st, double *distance) const override;
 
-    bool sampleTo(ompl::base::State *state, const ompl::base::State *source) const override;
+    bool sampleTo(ompl::base::State *state, const ompl::base::State *source, double* distance = nullptr) const override;
   };
 };
 

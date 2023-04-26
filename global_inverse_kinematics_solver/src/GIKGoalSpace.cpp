@@ -18,9 +18,9 @@ namespace global_inverse_kinematics_solver{
     return constraint->isSatisfied(st, distance);
   }
 
-  bool GIKGoalSpace::sampleTo(ompl::base::State *state, const ompl::base::State *source) const {
+  bool GIKGoalSpace::sampleTo(ompl::base::State *state, const ompl::base::State *source, double* distance) const {
     GIKStateSpacePtr goalSpaceNear = std::static_pointer_cast<GIKStateSpace>(goalSpace_); // goal spaceは、GIKStateSpaceであるという想定. 本当はGoalSpace::setSpace時にcastして保管しておきたいのだが、GoalSpace::setSpaceがvirtual関数として宣言されていないのでできなかった.
-    bool ret = goalSpaceNear->getGIKConstraint()->projectNearValidWithNominal(state, source); // goal projection時についでにnominal-poseに近づけることで、tree全体としてnonimalposeに近づけて、逆運動学をときやすくする.
+    bool ret = goalSpaceNear->getGIKConstraint()->projectNearValidWithNominal(state, source, distance); // goal projection時についでにnominal-poseに近づけることで、tree全体としてnonimalposeに近づけて、逆運動学をときやすくする.
     si_->enforceBounds(state);
     return ret;
   }
