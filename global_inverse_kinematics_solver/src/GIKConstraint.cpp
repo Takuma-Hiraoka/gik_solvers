@@ -64,6 +64,21 @@ namespace global_inverse_kinematics_solver{
       }
     }
 
+    if(viewer_ != nullptr && m==0){
+      loopCount_++;
+      if(loopCount_%drawLoop_==0){
+        std::vector<cnoid::SgNodePtr> markers;
+        for(int j=0;j<constraints_[m].size();j++){
+          for(int k=0;k<constraints_[m][j].size(); k++){
+            const std::vector<cnoid::SgNodePtr>& marker = constraints_[m][j][k]->getDrawOnObjects();
+            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
+          }
+        }
+        viewer_->drawOn(markers);
+        viewer_->drawObjects(true);
+      }
+    }
+
     modelQueue_->push(m);
 
     return solved;
@@ -103,6 +118,21 @@ namespace global_inverse_kinematics_solver{
         ompl::base::State* st = stateSpace_->allocState();
         frame2State(path->at(i), stateSpace_, st);
         tmp_state->intermediateStates.push_back(st);
+      }
+    }
+
+    if(viewer_ != nullptr && m==0){
+      loopCount_++;
+      if(loopCount_%drawLoop_==0){
+        std::vector<cnoid::SgNodePtr> markers;
+        for(int j=0;j<constraints_[m].size();j++){
+          for(int k=0;k<constraints_[m][j].size(); k++){
+            const std::vector<cnoid::SgNodePtr>& marker = constraints_[m][j][k]->getDrawOnObjects();
+            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
+          }
+        }
+        viewer_->drawOn(markers);
+        viewer_->drawObjects(true);
       }
     }
 

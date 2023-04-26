@@ -78,6 +78,8 @@ namespace global_inverse_kinematics_solver{
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables[0]);
     GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables);
+    gikConstraint->viewer() = param.viewer;
+    gikConstraint->drawLoop() = param.drawLoop;
     gikConstraint->param() = param.pikParam;
     gikConstraint->nearMaxError() = param.nearMaxError;
     GIKStateSpacePtr stateSpace = std::make_shared<GIKStateSpace>(ambientSpace, gikConstraint);
