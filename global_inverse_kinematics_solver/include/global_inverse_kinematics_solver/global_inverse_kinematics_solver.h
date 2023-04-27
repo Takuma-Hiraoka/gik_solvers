@@ -45,14 +45,14 @@ namespace global_inverse_kinematics_solver{
   // pathは、freeJointはx y z qx qy qz qwの順
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
-                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& goals,
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param = GIKParam(),
                 std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
 
   bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables,
                 const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints,
-                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& goals,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals,
                 std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param = GIKParam(),

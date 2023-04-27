@@ -56,8 +56,8 @@ namespace global_inverse_kinematics_solver{
 
     // model queueで管理.
     mutable std::shared_ptr<UintQueue> modelQueue_;
-    const std::vector<std::vector<cnoid::LinkPtr> >& variables_;
-    const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints_;
+    const std::vector<std::vector<cnoid::LinkPtr> > variables_;
+    const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraints_;
     std::vector<std::set<cnoid::BodyPtr> > bodies_;
     mutable std::vector<std::vector<std::shared_ptr<prioritized_qp_base::Task> > > tasks_;
     // constraintsの末尾にJointAngleConstraintを加えたもの

@@ -4,23 +4,48 @@
 namespace global_inverse_kinematics_solver{
 
   bool GIKGoalSpace::isSatisfied(const ompl::base::State *st, double *distance) const {
-    // TODO goalのみ見る(constraintは見ない)の方が高速だが...
-    ompl::base::ConstrainedStateSpacePtr goal_s = std::dynamic_pointer_cast<ompl::base::ConstrainedStateSpace>(goalSpace_);
-    if(goal_s == nullptr){
-      return NearGoalSpace::isSatisfied(st, distance);
+    const unsigned int m = modelQueue_->pop();
+    state2Link(si_->getStateSpace(), st, variables_[m]); // spaceとstateの空間をそろえる
+    for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+      (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+      (*it)->calcCenterOfMass();
     }
 
-    const GIKConstraintPtr constraint = std::dynamic_pointer_cast<GIKConstraint>(goal_s->getConstraint());
-    if(constraint == nullptr){
-      return NearGoalSpace::isSatisfied(st, distance);
+    bool satisfied = true;
+    double squaredDistance = 0.0;
+    for(size_t i=0;i<goals_[m].size();i++){
+      goals_[m][i]->updateBounds();
+      if(!goals_[m][i]->isSatisfied()) satisfied = false;
+      if(distance) squaredDistance += std::pow(goals_[m][i]->distance(), 2.0);
     }
 
-    return constraint->isSatisfied(st, distance);
+    if(distance) *distance = std::sqrt(squaredDistance);
+
+    modelQueue_->push(m);
+    return satisfied;
   }
 
+  double GIKGoalSpace::distanceGoal(const ompl::base::State *st) const {
+    const unsigned int m = modelQueue_->pop();
+    state2Link(si_->getStateSpace(), st, variables_[m]); // spaceとstateの空間をそろえる
+    for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+      (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+      (*it)->calcCenterOfMass();
+    }
+
+    double squaredDistance = 0.0;
+    for(size_t i=0;i<goals_[m].size();i++){
+      goals_[m][i]->updateBounds();
+      squaredDistance += std::pow(goals_[m][i]->distance(), 2.0);
+    }
+
+    modelQueue_->push(m);
+    return std::sqrt(squaredDistance);
+  }
+
+
   bool GIKGoalSpace::sampleTo(ompl::base::State *state, const ompl::base::State *source, double* distance) const {
-    GIKStateSpacePtr goalSpaceNear = std::static_pointer_cast<GIKStateSpace>(goalSpace_); // goal spaceは、GIKStateSpaceであるという想定. 本当はGoalSpace::setSpace時にcastして保管しておきたいのだが、GoalSpace::setSpaceがvirtual関数として宣言されていないのでできなかった.
-    bool ret = goalSpaceNear->getGIKConstraint()->projectNearValidWithNominal(state, source, distance); // goal projection時についでにnominal-poseに近づけることで、tree全体としてnonimalposeに近づけて、逆運動学をときやすくする.
+    bool ret = goalStateSpace_->getGIKConstraint()->projectNearValidWithNominal(state, source, distance); // goal projection時についでにnominal-poseに近づけることで、tree全体としてnonimalposeに近づけて、逆運動学をときやすくする.
     si_->enforceBounds(state);
     return ret;
   }

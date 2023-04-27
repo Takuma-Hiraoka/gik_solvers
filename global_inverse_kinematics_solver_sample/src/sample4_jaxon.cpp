@@ -146,7 +146,7 @@ namespace global_inverse_kinematics_solver_sample{
       std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints{constraints0,constraints1};
 
       // setup goals
-      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goal0;
+      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goals;
       std::shared_ptr<ik_constraint2::PositionConstraint> goalRaw;
       {
         // task: rarm to target.
@@ -157,12 +157,10 @@ namespace global_inverse_kinematics_solver_sample{
         goal->B_link() = nullptr;
         goal->B_localpos().translation() = cnoid::Vector3(0.55,-0.25,0.45); // below desk
         //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
-        goal0.push_back(goal);
+        goals.push_back(goal);
 
         goalRaw = goal;
       }
-
-      std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
 
       std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > nominals;
       {
@@ -215,8 +213,8 @@ namespace global_inverse_kinematics_solver_sample{
                                                                path);
 
 
-      std::copy(goals[0].begin(), goals[0].end(), std::back_inserter(constraints[1]));
-      goals[0].clear();
+      std::copy(goals.begin(), goals.end(), std::back_inserter(constraints[1]));
+      goals.clear();
       {
         // task: rarm to target.
         std::shared_ptr<ik_constraint2::PositionConstraint> goal = std::make_shared<ik_constraint2::PositionConstraint>();
@@ -225,7 +223,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
         goal->B_localpos().translation() = cnoid::Vector3(0.55,0.25,0.45); // below desk
         //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
-        goals[0].push_back(goal);
+        goals.push_back(goal);
 
         goalRaw = goal;
       }
@@ -251,12 +249,10 @@ namespace global_inverse_kinematics_solver_sample{
       //   }
       // }
       // for(size_t i=0;i<goals.size();i++){
-      //   for(size_t j=0;j<goals[i].size();j++){
-      //     goals[i][j]->debugLevel() = 0;//not debug
-      //     goals[i][j]->updateBounds();
-      //     if(goals[i][j]->isSatisfied()) std::cerr << "goal " << i << " " << j << ": satisfied"<< std::endl;
-      //     else std::cerr << "goal " << i << " " << j << ": NOT satisfied"<< std::endl;
-      //   }
+      //   goals[i]->debugLevel() = 0;//not debug
+      //   goals[i]->updateBounds();
+      //   if(goals[i]->isSatisfied()) std::cerr << "goal " << i << ": satisfied"<< std::endl;
+      //   else std::cerr << "goal " << i << ": NOT satisfied"<< std::endl;
       // }
 
       // main loop
@@ -275,12 +271,10 @@ namespace global_inverse_kinematics_solver_sample{
           }
         }
         for(int j=0;j<goals.size();j++){
-          for(int k=0;k<goals[j].size(); k++){
-            goals[j][k]->debugLevel() = 0;
-            goals[j][k]->updateBounds();
-            const std::vector<cnoid::SgNodePtr>& marker = goals[j][k]->getDrawOnObjects();
-            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
-          }
+          goals[j]->debugLevel() = 0;
+          goals[j]->updateBounds();
+          const std::vector<cnoid::SgNodePtr>& marker = goals[j]->getDrawOnObjects();
+          std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
         }
         viewer->drawOn(markers);
         viewer->drawObjects();

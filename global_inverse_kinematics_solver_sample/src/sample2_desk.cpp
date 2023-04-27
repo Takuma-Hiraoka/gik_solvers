@@ -129,7 +129,7 @@ namespace global_inverse_kinematics_solver_sample{
       std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints{constraints0,constraints1};
 
       // setup goals
-      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goal0;
+      std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goals;
       std::shared_ptr<ik_constraint2::PositionConstraint> goalRaw;
       {
         // task: rarm to target.
@@ -139,12 +139,10 @@ namespace global_inverse_kinematics_solver_sample{
         goal->B_link() = nullptr;
         goal->B_localpos().translation() = cnoid::Vector3(0.4,-0.2,0.3); // below desk
         goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
-        goal0.push_back(goal);
+        goals.push_back(goal);
 
         goalRaw = goal;
       }
-
-      std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
 
       std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > nominals;
       {
@@ -199,12 +197,10 @@ namespace global_inverse_kinematics_solver_sample{
         }
       }
       for(size_t i=0;i<goals.size();i++){
-        for(size_t j=0;j<goals[i].size();j++){
-          goals[i][j]->debugLevel() = 0;//not debug
-          goals[i][j]->updateBounds();
-          if(goals[i][j]->isSatisfied()) std::cerr << "goal " << i << " " << j << ": satisfied"<< std::endl;
-          else std::cerr << "goal " << i << " " << j << ": NOT satisfied"<< std::endl;
-        }
+        goals[i]->debugLevel() = 0;//not debug
+        goals[i]->updateBounds();
+        if(goals[i]->isSatisfied()) std::cerr << "goal " << i << ": satisfied"<< std::endl;
+        else std::cerr << "goal " << i << ": NOT satisfied"<< std::endl;
       }
 
       // main loop
@@ -223,12 +219,10 @@ namespace global_inverse_kinematics_solver_sample{
           }
         }
         for(int j=0;j<goals.size();j++){
-          for(int k=0;k<goals[j].size(); k++){
-            goals[j][k]->debugLevel() = 0;
-            goals[j][k]->updateBounds();
-            const std::vector<cnoid::SgNodePtr>& marker = goals[j][k]->getDrawOnObjects();
-            std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
-          }
+          goals[j]->debugLevel() = 0;
+          goals[j]->updateBounds();
+          const std::vector<cnoid::SgNodePtr>& marker = goals[j]->getDrawOnObjects();
+          std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
         }
         viewer->drawOn(markers);
         viewer->drawObjects();

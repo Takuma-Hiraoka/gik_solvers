@@ -67,7 +67,7 @@ int main(void){
   std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints{constraints0,constraints1};
 
   // setup goals
-  std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goal0;
+  std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > goals;
   {
     // task: rarm to target.
     std::shared_ptr<ik_constraint2::PositionConstraint> goal = std::make_shared<ik_constraint2::PositionConstraint>();
@@ -76,10 +76,8 @@ int main(void){
     goal->B_link() = nullptr;
     goal->B_localpos().translation() = cnoid::Vector3(0.3,-0.2,0.8);
     goal->B_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(-1.5,cnoid::Vector3(0,1,0)));
-    goal0.push_back(goal);
+    goals.push_back(goal);
   }
-
-  std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goals{goal0};
 
   std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > nominals;
   {
@@ -125,11 +123,9 @@ int main(void){
   }
 
   for(size_t i=0;i<goals.size();i++){
-    for(size_t j=0;j<goals[i].size();j++){
-      goals[i][j]->debugLevel() = 0;//not debug
-      goals[i][j]->updateBounds();
-      if(goals[i][j]->isSatisfied()) std::cerr << "goal " << i << " " << j << ": satisfied"<< std::endl;
-      else std::cerr << "goal " << i << " " << j << ": NOT satisfied"<< std::endl;
-    }
+    goals[i]->debugLevel() = 0;//not debug
+    goals[i]->updateBounds();
+    if(goals[i]->isSatisfied()) std::cerr << "goal " << i << ": satisfied"<< std::endl;
+    else std::cerr << "goal " << i << ": NOT satisfied"<< std::endl;
   }
 }
