@@ -45,6 +45,7 @@ namespace global_inverse_kinematics_solver{
     const std::vector<std::vector<cnoid::LinkPtr> >& variables_;
     const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals_;
     std::vector<std::set<cnoid::BodyPtr> > bodies_;
+
   };
 };
 

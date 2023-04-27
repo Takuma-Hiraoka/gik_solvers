@@ -163,7 +163,9 @@ namespace global_inverse_kinematics_solver{
           solutionPath.print(std::cout);
         }
 
+        gikConstraint->viewer() = nullptr; // simplifySolution()中は描画しない
         simpleSetup.simplifySolution();
+        gikConstraint->viewer() = param.viewer; // simplifySolution()中は描画しない
         solutionPath = simpleSetup.getSolutionPath();
 
         if(param.debugLevel > 1){

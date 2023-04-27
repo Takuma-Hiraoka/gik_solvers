@@ -188,16 +188,16 @@ namespace global_inverse_kinematics_solver_sample{
       // }
       global_inverse_kinematics_solver::GIKParam param;
       param.debugLevel=0;
-      param.range = 0.3; // 0.2よりも0.3の方が速い
-      param.delta = 0.4; // 大きければ大きいほど速はずだが、干渉計算や補間の正確さが犠牲になる. 0.2だと正確. 0.4だと速い
+      param.range = 0.5; // 0.2よりも0.3の方が速い. sample一回につきprojectGoalを行うので、rangeはなるべく大きい方がいい.
+      param.delta = 0.4; // 大きければ大きいほど速いはずだが、干渉計算や補間の正確さが犠牲になる. 0.2だと正確. 0.4だと速い
       param.goalBias = 0.2; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
       param.timeout = 30.0;
       param.projectLink.push_back(goalRaw->A_link());
       param.projectLocalPose = goalRaw->A_localpos();
-      param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
+      param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い? 2m * 2m * 2mの空間を動くとして、samplingを200個くらいまでにしたければ、cellの大きさもそれなりに大きくないとスカスカになってしまう.
       param.viewer = viewer;
       param.drawLoop = 1;
-      param.threads = 10;
+      param.threads = 20;
       //param.pikParam.we = 5e2;
       //param.pikParam.wmax = 1e0;
       param.pikParam.convergeThre = 5e-2; // 2.5e-2は小さすぎる. param.pikParam.debugLevel = 1にして観察せよ
