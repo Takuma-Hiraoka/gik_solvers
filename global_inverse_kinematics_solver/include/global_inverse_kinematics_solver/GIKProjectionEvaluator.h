@@ -30,7 +30,7 @@ namespace global_inverse_kinematics_solver{
   protected:
     // model queueで管理.
     mutable std::shared_ptr<UintQueue> modelQueue_;
-    const std::vector<std::vector<cnoid::LinkPtr> >& variables_;
+    const std::vector<std::vector<cnoid::LinkPtr> > variables_;
     std::vector<std::set<cnoid::BodyPtr> > bodies_;
     std::vector<cnoid::LinkPtr> parentLink_;
 
