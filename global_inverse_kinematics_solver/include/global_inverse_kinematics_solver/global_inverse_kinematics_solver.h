@@ -26,7 +26,6 @@ namespace global_inverse_kinematics_solver{
     unsigned int drawLoop = 100; // スレッド0が、drawLoopに一回描画する
 
     unsigned int threads = 1; // 1以上
-    unsigned int trial = 10; // 1以上. 妥当な解が見つかるまでとき直す
 
     prioritized_inverse_kinematics_solver2::IKParam pikParam;
     double nearMaxError = 0.05; // sampleNear時のjointAngleConstraintのmaxError. // 大きいとタスクが達成できない場合に不安定になりやすいが、小さいとIKのloopが多く必要になって遅くなる. 各constraintのmaxErrorも同じ値にせよ
@@ -48,21 +47,21 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& goals, // 0: goals(AND).
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals, // 0: nominals
                 const GIKParam& param = GIKParam(),
-                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
+                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr); // 0: states. 1: angles
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, // 0: constriant priority 1: constraints
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals, // 0: goalSpace(OR). 1: goals(AND).
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals, // 0: nominals
-                const GIKParam& param = GIKParam(),
-                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
+                const GIKParam& param,
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path); // 0: goalSpace(OR). 1: states. 2: angles
 
   bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables, // 0: modelQueue, 1: variables
                 const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, // 0: modelQueue, 1: constriant priority 2: constraints
                 const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& goals, // 0: modelQueue. 1: goalSpace(OR). 2: goals(AND).
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals, // 0: modelQueue, 1: nominals
                 std::shared_ptr<UintQueue> modelQueue,
-                const GIKParam& param = GIKParam(),
-                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr);
+                const GIKParam& param,
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path); // 0: goalSpace(OR). 1: states. 2: angles
 
 }
 

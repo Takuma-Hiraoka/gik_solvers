@@ -13,7 +13,7 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
-    return solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, path);
+    return solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path});
   }
 
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
@@ -21,7 +21,7 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param,
-                std::shared_ptr<std::vector<std::vector<double> > > path){
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path){
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
@@ -81,7 +81,7 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals, // 0: modelQueue, 1: nominals
                 std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param,
-                std::shared_ptr<std::vector<std::vector<double> > > path){
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path){
     if((variables.size() == 0) ||
        (variables.size() != constraints.size()) ||
        (constraints.size() != goals.size()) ||
@@ -89,6 +89,16 @@ namespace global_inverse_kinematics_solver{
        ){
       std::cerr << "[solveGIK] size mismatch" << std::endl;
       return false;
+    }
+
+    bool calculate_path = true;
+    if(goals.size() == 0 ||
+       goals[0].size() != path.size()) calculate_path=false;
+    for(int i=0;i<path.size();i++) {
+      if(path[i] == nullptr) {
+        calculate_path = false;
+        break;
+      }
     }
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables[0]);
@@ -161,10 +171,11 @@ namespace global_inverse_kinematics_solver{
 
     // たまに、サンプル時のIKと補間時のIKが微妙に違うことが原因で、解のpathの補間に失敗する場合があるので、成功するまでとき直す. path.check()と、interpolateやsimplifyのIKは同じものなので、最初のpath.check()が成功すれば、simplifyやinterpolate後のpathも必ずcheck()が成功すると想定.
     ompl::base::PlannerStatus solved;
-    for(int trial = 0; trial<param.trial; trial++) {
-      //planner->clear();
-      //problemDefition->clearSolutionPaths();
 
+    //planner->clear();
+    //problemDefition->clearSolutionPaths();
+
+    {
       ompl::time::point start = ompl::time::now();
       solved = planner->solve(param.timeout);
       double planTime = ompl::time::seconds(ompl::time::now() - start);
@@ -172,32 +183,26 @@ namespace global_inverse_kinematics_solver{
         OMPL_INFORM("Solution found in %f seconds", planTime);
       else
         OMPL_INFORM("No solution found after %f seconds", planTime);
-
-      if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) break;
-      // IKの途中経過を使っているので、EXACT_SOLUTIONなら、必ずinterpolateできている.
-      // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになっていたり、deltaを上回った距離になっていることがあって、それは許容したい.
-      // solutionPath.check()は行わない
     }
 
-    if(path == nullptr){
-      if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION ||
-         solved == ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) {
-        const ompl::geometric::PathGeometricPtr solutionPath = std::static_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPath());
-        // goal stateをvariablesに反映して返す.
-        state2Link(stateSpace, solutionPath->getState(solutionPath->getStateCount()-1), variables[0]);
-        std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
-        for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
-          (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
-          (*it)->calcCenterOfMass();
-        }
+    // IKの途中経過を使っているので、EXACT_SOLUTIONなら、必ずinterpolateできている.
+    // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになっていたり、deltaを上回った距離になっていることがあって、それは許容したい.
+    // solutionPath.check()は行わない
+
+    // goal stateをvariablesに反映して返す.
+    if(problemDefinition->hasSolution()) {
+      const ompl::geometric::PathGeometricPtr solutionPath = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPath());
+      state2Link(stateSpace, solutionPath->getState(solutionPath->getStateCount()-1), variables[0]);
+      std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
+      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
+        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+        (*it)->calcCenterOfMass();
       }
+    }
 
-      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
-    }else{
-      if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION ||
-         solved == ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) {
-        ompl::geometric::PathGeometricPtr solutionPath = std::static_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPath());
-
+    if(calculate_path){
+      for(int i=0;i<path.size();i++){
+        ompl::geometric::PathGeometricPtr solutionPath = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPathForEachGoal()[i]);
         if(param.debugLevel > 1){
           solutionPath->print(std::cout);
         }
@@ -222,22 +227,14 @@ namespace global_inverse_kinematics_solver{
         }
 
         // 途中の軌道をpathに入れて返す
-        path->resize(solutionPath->getStateCount());
-        for(int i=0;i<solutionPath->getStateCount();i++){
+        path[i]->resize(solutionPath->getStateCount());
+        for(int j=0;j<solutionPath->getStateCount();j++){
           //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
-          state2Frame(stateSpace, solutionPath->getState(i), path->at(i));
-        }
-
-        // goal stateをvariablesに反映して返す.
-        state2Link(stateSpace, solutionPath->getState(solutionPath->getStateCount()-1), variables[0]);
-        std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
-        for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
-          (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
-          (*it)->calcCenterOfMass();
+          state2Frame(stateSpace, solutionPath->getState(j), path[i]->at(j));
         }
       }
-
-      return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
     }
+
+    return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
 }
