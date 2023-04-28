@@ -201,8 +201,15 @@ namespace global_inverse_kinematics_solver{
     }
 
     if(calculate_path){
+      int path_num = 0;
       for(int i=0;i<path.size();i++){
         ompl::geometric::PathGeometricPtr solutionPath = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPathForEachGoal()[i]);
+        if(solutionPath == nullptr) {
+          path[i]->resize(0);
+          continue;
+        }
+        path_num++;
+
         if(param.debugLevel > 1){
           solutionPath->print(std::cout);
         }
@@ -233,6 +240,8 @@ namespace global_inverse_kinematics_solver{
           state2Frame(stateSpace, solutionPath->getState(j), path[i]->at(j));
         }
       }
+      OMPL_INFORM("Path found %d / %d goals",
+                  path_num, path.size());
     }
 
     return solved == ompl::base::PlannerStatus::EXACT_SOLUTION;
