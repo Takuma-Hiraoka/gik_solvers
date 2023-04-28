@@ -157,6 +157,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->B_link() = nullptr;
         goal->B_localpos().translation() = cnoid::Vector3(0.55,-0.25,0.45); // below desk
         //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+        goal->precision() = 3e-2;
         goals.push_back(goal);
 
         goalRaw = goal;
@@ -200,7 +201,7 @@ namespace global_inverse_kinematics_solver_sample{
       param.threads = 20;
       //param.pikParam.we = 5e2;
       //param.pikParam.wmax = 1e0;
-      param.pikParam.convergeThre = 5e-2; // 2.5e-2は小さすぎる. param.pikParam.debugLevel = 1にして観察せよ
+      param.pikParam.convergeThre = 5e-2; // 2.5e-2は小さすぎる. param.pikParam.debugLevel = 1にして観察せよ. goalのprecision()の値をこれにあわせて大きくせよ
       param.pikParam.debugLevel = 0;
       param.pikParam.pathOutputLoop = 5;
       //param.nearMaxError = 0.1; // 0.05でも0.1でもそんなに変わらない. 0.1だとQPが不安定になりやすい. 各constraintのmaxErrorも同じ値にせよ
@@ -222,6 +223,7 @@ namespace global_inverse_kinematics_solver_sample{
         goal->A_localpos().translation() = cnoid::Vector3(0.0,-0.055,-0.217);
         goal->A_localpos().linear() = cnoid::Matrix3(cnoid::AngleAxis(1.5708, cnoid::Vector3(0,1,0)));
         goal->B_localpos().translation() = cnoid::Vector3(0.55,0.25,0.45); // below desk
+        goal->precision() = 3e-2;
         //goal->maxError() << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
         goals.push_back(goal);
 
