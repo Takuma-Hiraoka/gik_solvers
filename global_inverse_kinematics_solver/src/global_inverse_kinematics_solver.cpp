@@ -89,7 +89,7 @@ namespace global_inverse_kinematics_solver{
     spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation)); // validは全てconstraintでチェックするので、StateValidityCheckerは全てvalidでよい
     spaceInformation->setup(); // ここでsetupを呼ばないと、stateSpaceがsetupされないのでlink2State等ができない
 
-    ompl::base::ProblemDefinitionPtr problemDefinition = std::make_shared<ompl::base::ProblemDefinition>(spaceInformation);
+    ompl_near_projection::NearProblemDefinitionPtr problemDefinition = std::make_shared<ompl_near_projection::NearProblemDefinition>(spaceInformation);
 
     ompl::base::ScopedState<> start(stateSpace);
     link2State(variables[0], stateSpace, start.get());
