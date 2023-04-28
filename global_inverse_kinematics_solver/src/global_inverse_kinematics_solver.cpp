@@ -1,6 +1,10 @@
 #include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
 #include <ompl/base/ConstrainedSpaceInformation.h>
-#include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/ProblemDefinition.h>
+#include <ompl/geometric/PathGeometric.h>
+#include <ompl/geometric/PathSimplifier.h>
+
 
 namespace global_inverse_kinematics_solver{
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
@@ -85,18 +89,21 @@ namespace global_inverse_kinematics_solver{
     spaceInformation->setStateValidityChecker(std::make_shared<ompl::base::AllValidStateValidityChecker>(spaceInformation)); // validは全てconstraintでチェックするので、StateValidityCheckerは全てvalidでよい
     spaceInformation->setup(); // ここでsetupを呼ばないと、stateSpaceがsetupされないのでlink2State等ができない
 
-    ompl::geometric::SimpleSetup simpleSetup(spaceInformation);
+    ompl::base::ProblemDefinitionPtr problemDefinition = std::make_shared<ompl::base::ProblemDefinition>(spaceInformation);
 
     ompl::base::ScopedState<> start(stateSpace);
     link2State(variables[0], stateSpace, start.get());
-    simpleSetup.setStartState(start);
+    problemDefinition->clearStartStates();
+    problemDefinition->addStartState(start);
 
     GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation, ambientSpace, modelQueue, constraints, variables, goals, nominals);
     goal->setViewer(param.viewer);
     goal->setDrawLoop(param.drawLoop);
     goal->setParam(param.pikParam);
     goal->setNearMaxError(param.nearMaxError);
-    simpleSetup.setGoal(goal);
+    problemDefinition->setGoal(goal);
+
+    ompl::base::PlannerPtr planner;
 
     if(param.projectLink.size() == variables.size()){
       GIKProjectionEvaluatorPtr proj = std::make_shared<GIKProjectionEvaluator>(stateSpace, modelQueue, variables);
@@ -105,34 +112,47 @@ namespace global_inverse_kinematics_solver{
       proj->setCellSizes(std::vector<double>(proj->getDimension(), param.projectCellSize));
 
       if(param.threads <= 1){
-        std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(simpleSetup.getSpaceInformation());
-        planner->setProjectionEvaluator(proj);
-        planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-        planner->setGoalBias(param.goalBias);
-        simpleSetup.setPlanner(planner);
+        std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(spaceInformation);
+        planner_->setProjectionEvaluator(proj);
+        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+        planner_->setGoalBias(param.goalBias);
+
+        planner = planner_;
+
       }else{
-        std::shared_ptr<ompl_near_projection::geometric::pNearKPIECE1> planner = std::make_shared<ompl_near_projection::geometric::pNearKPIECE1>(simpleSetup.getSpaceInformation());
-        planner->setProjectionEvaluator(proj);
-        planner->setThreadCount(param.threads);
-        planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-        planner->setGoalBias(param.goalBias);
-        simpleSetup.setPlanner(planner);
+        std::shared_ptr<ompl_near_projection::geometric::pNearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::pNearKPIECE1>(spaceInformation);
+        planner_->setProjectionEvaluator(proj);
+        planner_->setThreadCount(param.threads);
+        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+        planner_->setGoalBias(param.goalBias);
+        planner = planner_;
+
       }
     }else{
-      std::shared_ptr<ompl_near_projection::geometric::NearEST> planner = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
-      planner->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-      planner->setGoalBias(param.goalBias);
-      simpleSetup.setPlanner(planner);
+      std::shared_ptr<ompl_near_projection::geometric::NearEST> planner_ = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
+      planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+      planner_->setGoalBias(param.goalBias);
+      planner = planner_;
     }
 
-    // attempt to solve the problem within one second of planning time
-    simpleSetup.setup();
+    if(!spaceInformation->isSetup()) spaceInformation->setup();
+    planner->setProblemDefinition(problemDefinition);
+    if(!planner->isSetup()) planner->setup();
 
     // たまに、サンプル時のIKと補間時のIKが微妙に違うことが原因で、解のpathの補間に失敗する場合があるので、成功するまでとき直す. path.check()と、interpolateやsimplifyのIKは同じものなので、最初のpath.check()が成功すれば、simplifyやinterpolate後のpathも必ずcheck()が成功すると想定.
     ompl::base::PlannerStatus solved;
     for(int trial = 0; trial<param.trial; trial++) {
-      simpleSetup.clear();
-      solved = simpleSetup.solve(param.timeout);
+      //planner->clear();
+      //problemDefition->clearSolutionPaths();
+
+      ompl::time::point start = ompl::time::now();
+      solved = planner->solve(param.timeout);
+      double planTime = ompl::time::seconds(ompl::time::now() - start);
+      if (solved == ompl::base::PlannerStatus::EXACT_SOLUTION)
+        OMPL_INFORM("Solution found in %f seconds", planTime);
+      else
+        OMPL_INFORM("No solution found after %f seconds", planTime);
+
       if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION) break;
       // IKの途中経過を使っているので、EXACT_SOLUTIONなら、必ずinterpolateできている.
       // 一時的にstateが最適化の誤差で微妙に!isSatisfiedになっていたり、deltaを上回った距離になっていることがあって、それは許容したい.
@@ -142,9 +162,9 @@ namespace global_inverse_kinematics_solver{
     if(path == nullptr){
       if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION ||
          solved == ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) {
-        ompl::geometric::PathGeometric solutionPath(spaceInformation);
+        const ompl::geometric::PathGeometricPtr solutionPath = std::static_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPath());
         // goal stateをvariablesに反映して返す.
-        state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1), variables[0]);
+        state2Link(stateSpace, solutionPath->getState(solutionPath->getStateCount()-1), variables[0]);
         std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
         for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
           (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
@@ -156,38 +176,40 @@ namespace global_inverse_kinematics_solver{
     }else{
       if(solved == ompl::base::PlannerStatus::EXACT_SOLUTION ||
          solved == ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) {
-        ompl::geometric::PathGeometric solutionPath = simpleSetup.getSolutionPath();
+        ompl::geometric::PathGeometricPtr solutionPath = std::static_pointer_cast<ompl::geometric::PathGeometric>(problemDefinition->getSolutionPath());
 
         if(param.debugLevel > 1){
-          std::cerr << solutionPath.check() << std::endl;
-          solutionPath.print(std::cout);
+          solutionPath->print(std::cout);
         }
 
+        ompl::geometric::PathSimplifierPtr pathSimplifier = std::make_shared<ompl::geometric::PathSimplifier>(spaceInformation);
+        ompl::time::point start = ompl::time::now();
+        std::size_t numStates = solutionPath->getStateCount();
         gikConstraint->viewer() = nullptr; // simplifySolution()中は描画しない
-        simpleSetup.simplifySolution();
+        pathSimplifier->simplify(*solutionPath, param.timeout);
         gikConstraint->viewer() = param.viewer; // simplifySolution()中は描画しない
-        solutionPath = simpleSetup.getSolutionPath();
+        double simplifyTime = ompl::time::seconds(ompl::time::now() - start);
+        OMPL_INFORM("Path simplification took %f seconds and changed from %d to %d states",
+                    simplifyTime, numStates, solutionPath->getStateCount());
 
         if(param.debugLevel > 1){
-          std::cerr << solutionPath.check() << std::endl;
-          solutionPath.print(std::cout);
+          solutionPath->print(std::cout);
         }
 
-        solutionPath.interpolate();
+        solutionPath->interpolate();
         if(param.debugLevel > 1){
-          std::cerr << solutionPath.check() << std::endl;
-          solutionPath.print(std::cout);
+          solutionPath->print(std::cout);
         }
 
         // 途中の軌道をpathに入れて返す
-        path->resize(solutionPath.getStateCount());
-        for(int i=0;i<solutionPath.getStateCount();i++){
+        path->resize(solutionPath->getStateCount());
+        for(int i=0;i<solutionPath->getStateCount();i++){
           //stateSpace->getDimension()は,SO3StateSpaceが3を返してしまう(実際はquaternionで4)ので、使えない
-          state2Frame(stateSpace, solutionPath.getState(i), path->at(i));
+          state2Frame(stateSpace, solutionPath->getState(i), path->at(i));
         }
 
         // goal stateをvariablesに反映して返す.
-        state2Link(stateSpace, solutionPath.getState(solutionPath.getStateCount()-1), variables[0]);
+        state2Link(stateSpace, solutionPath->getState(solutionPath->getStateCount()-1), variables[0]);
         std::set<cnoid::BodyPtr> bodies = getBodies(variables[0]);
         for(std::set<cnoid::BodyPtr>::const_iterator it=bodies.begin(); it != bodies.end(); it++){
           (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
