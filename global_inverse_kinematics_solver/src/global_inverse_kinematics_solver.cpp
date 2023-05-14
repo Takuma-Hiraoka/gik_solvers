@@ -24,7 +24,7 @@ namespace global_inverse_kinematics_solver{
                 std::shared_ptr<std::vector<std::vector<double> > > path){
     std::vector<std::shared_ptr<std::vector<std::vector<double> > > > paths;
     for(int i=0;i<goals.size();i++) paths.push_back(std::make_shared<std::vector<std::vector<double> > >());
-    bool ret = solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path}, false);
+    bool ret = solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, paths, false);
     for(int i=0;i<goals.size();i++){
       if(paths[i]->size()>0){
         *path = *(paths[i]);
