@@ -16,12 +16,31 @@ namespace global_inverse_kinematics_solver{
     return solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path});
   }
 
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){
+    std::vector<std::shared_ptr<std::vector<std::vector<double> > > > paths;
+    for(int i=0;i<goals.size();i++) paths.push_back(std::make_shared<std::vector<std::vector<double> > >());
+    bool ret = solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path}, false);
+    for(int i=0;i<goals.size();i++){
+      if(paths[i]->size()>0){
+        *path = *(paths[i]);
+        break;
+      }
+    }
+    return ret;
+  }
+
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param,
-                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path){
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
+                bool findAllSolution){
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
@@ -72,7 +91,8 @@ namespace global_inverse_kinematics_solver{
                     nominalss,
                     modelQueue,
                     param2,
-                    path);
+                    path,
+                    findAllSolution);
   }
 
   bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables, // 0: modelQueue, 1: variables
@@ -81,7 +101,8 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals, // 0: modelQueue, 1: nominals
                 std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param,
-                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path){
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
+                bool findAllSolution){
     if((variables.size() == 0) ||
        (variables.size() != constraints.size()) ||
        (constraints.size() != goals.size()) ||
@@ -114,6 +135,7 @@ namespace global_inverse_kinematics_solver{
     spaceInformation->setup(); // ここでsetupを呼ばないと、stateSpaceがsetupされないのでlink2State等ができない
 
     ompl_near_projection::NearProblemDefinitionPtr problemDefinition = std::make_shared<ompl_near_projection::NearProblemDefinition>(spaceInformation);
+    problemDefinition->setFindAllGoals(findAllSolution);
 
     ompl::base::ScopedState<> start(stateSpace);
     link2State(variables[0], stateSpace, start.get());
