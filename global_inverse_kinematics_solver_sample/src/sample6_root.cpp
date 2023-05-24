@@ -163,52 +163,52 @@ namespace global_inverse_kinematics_solver_sample{
       //constraint->debugLevel() = 2;
       constraints0.push_back(constraint);
     }
-    // {
-    //   // pitch > 0
-    //   std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
-    //   constraint->A_link() = abstractRobot->rootLink();
-    //   constraint->A_localpos().translation() = cnoid::Vector3(0.1,0.0,0.0);
-    //   constraint->B_link() = abstractRobot->rootLink();
-    //   constraint->eval_link() = nullptr;
-    //   constraint->weightR().setZero();
-    //   constraint->C().resize(1,3);
-    //   constraint->C().insert(0,2) = 1.0;
-    //   constraint->dl().resize(1);
-    //   constraint->dl()[0] = -1e10;
-    //   constraint->du().resize(1);
-    //   constraint->du()[0] = 0.0;
-    //   //constraint->debugLevel() = 2;
-    //   constraints0.push_back(constraint);
-    // }
-    // {
-    //   // pitch < 90
-    //   std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
-    //   constraint->A_link() = abstractRobot->rootLink();
-    //   constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.1);
-    //   constraint->B_link() = abstractRobot->rootLink();
-    //   constraint->eval_link() = nullptr;
-    //   constraint->weightR().setZero();
-    //   constraint->C().resize(1,3);
-    //   constraint->C().insert(0,2) = 1.0;
-    //   constraint->dl().resize(1);
-    //   constraint->dl()[0] = -1e10;
-    //   constraint->du().resize(1);
-    //   constraint->du()[0] = 0.0;
-    //   //constraint->debugLevel() = 2;
-    //   constraints0.push_back(constraint);
-    // }
-    // {
-    //   // roll = 0
-    //   std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::make_shared<ik_constraint2::PositionConstraint>();
-    //   constraint->A_link() = abstractRobot->rootLink();
-    //   constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.1,0.0);
-    //   constraint->B_link() = abstractRobot->rootLink();
-    //   constraint->B_localpos().translation() = cnoid::Vector3(0.0,-0.1,0.0);
-    //   constraint->eval_link() = nullptr;
-    //   constraint->weight() << 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
-    //   //constraint->debugLevel() = 2;
-    //   constraints0.push_back(constraint);
-    // }
+    {
+      // pitch > 0
+      std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
+      constraint->A_link() = abstractRobot->rootLink();
+      constraint->A_localpos().translation() = cnoid::Vector3(0.1,0.0,0.0);
+      constraint->B_link() = abstractRobot->rootLink();
+      constraint->eval_link() = nullptr;
+      constraint->weightR().setZero();
+      constraint->C().resize(1,3);
+      constraint->C().insert(0,2) = 1.0;
+      constraint->dl().resize(1);
+      constraint->dl()[0] = -1e10;
+      constraint->du().resize(1);
+      constraint->du()[0] = 0.0;
+      //constraint->debugLevel() = 2;
+      constraints0.push_back(constraint);
+    }
+    {
+      // pitch < 90
+      std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
+      constraint->A_link() = abstractRobot->rootLink();
+      constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.1);
+      constraint->B_link() = abstractRobot->rootLink();
+      constraint->eval_link() = nullptr;
+      constraint->weightR().setZero();
+      constraint->C().resize(1,3);
+      constraint->C().insert(0,2) = 1.0;
+      constraint->dl().resize(1);
+      constraint->dl()[0] = -1e10;
+      constraint->du().resize(1);
+      constraint->du()[0] = 0.0;
+      //constraint->debugLevel() = 2;
+      constraints0.push_back(constraint);
+    }
+    {
+      // roll = 0
+      std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::make_shared<ik_constraint2::PositionConstraint>();
+      constraint->A_link() = abstractRobot->rootLink();
+      constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.1,0.0);
+      constraint->B_link() = abstractRobot->rootLink();
+      constraint->B_localpos().translation() = cnoid::Vector3(0.0,-0.1,0.0);
+      constraint->eval_link() = nullptr;
+      constraint->weight() << 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
+      //constraint->debugLevel() = 2;
+      constraints0.push_back(constraint);
+    }
 
     {
       std::shared_ptr<ik_constraint2::ORConstraint> orconstraint = std::make_shared<ik_constraint2::ORConstraint>();
@@ -340,7 +340,8 @@ namespace global_inverse_kinematics_solver_sample{
     param.viewer = viewer;
     param.drawLoop = 1;
     param.maxTranslation = 3.0;
-    //param.pikParam.debugLevel = 2;
+    //param.pikParam.debugLevel = 1;
+    param.pikParam.maxIteration = 15; // collision invertは振動しやすい
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
