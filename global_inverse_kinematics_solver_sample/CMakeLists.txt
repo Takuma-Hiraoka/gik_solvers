@@ -7,6 +7,7 @@ set(CMAKE_BUILD_TYPE Release)
 find_package(catkin REQUIRED COMPONENTS
   ik_constraint2
   ik_constraint2_vclip
+  ik_constraint2_bullet
   ik_constraint2_distance_field
   global_inverse_kinematics_solver
   roslib
@@ -54,6 +55,8 @@ add_library(CnoidGlobalInverseKinematicsSolverSamplePlugin SHARED
   src/sample3_desk.cpp
   src/sample4_jaxon.cpp
   src/sample5_jaxon.cpp
+  src/samplerobot_common.cpp
+  src/sample6_root.cpp
 )
 target_link_libraries(CnoidGlobalInverseKinematicsSolverSamplePlugin
   ${catkin_LIBRARIES}

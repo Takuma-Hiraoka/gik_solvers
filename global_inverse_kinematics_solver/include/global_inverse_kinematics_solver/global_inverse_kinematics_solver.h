@@ -22,6 +22,8 @@ namespace global_inverse_kinematics_solver{
     cnoid::Position projectLocalPose = cnoid::Position::Identity();
     double projectCellSize = 0.15; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
+    double maxTranslation = 3.0;
+
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = nullptr;
     unsigned int drawLoop = 100; // スレッド0が、drawLoopに一回描画する
 
@@ -71,6 +73,17 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
                 bool findAllSolution=false); // 0: goalSpace(OR). 1: states. 2: angles
 
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, // 0: constriant priority 1: constraints
+                const std::vector<double>& goal, // 0: angles.
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr); // 0: states. 1: angles
+  bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables, // 0: modelQueue, 1: variables
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, // 0: modelQueue, 1: constriant priority 2: constraints
+                const std::vector<double>& goal, // 0: angles.
+                std::shared_ptr<UintQueue> modelQueue,
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path = nullptr); // 0: states. 1: angles
 }
 
 #endif
