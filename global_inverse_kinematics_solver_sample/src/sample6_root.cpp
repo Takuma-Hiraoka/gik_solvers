@@ -139,8 +139,8 @@ namespace global_inverse_kinematics_solver_sample{
       constraint->A_link() = abstractRobot->rootLink();
       constraint->B_link() = horizontalRobot->rootLink();
       constraint->eval_link() = horizontalRobot->rootLink();
-      constraint->weight() << 0.0, 0.0, 0.0, 0.0, 0.0, 1.0;
-      constraint->debugLevel() = 2;
+      constraint->weight() << 1.0, 1.0, 1.0, 0.0, 0.0, 1.0;
+      //constraint->debugLevel() = 2;
       constraints0.push_back(constraint);
     }
     {
@@ -150,7 +150,7 @@ namespace global_inverse_kinematics_solver_sample{
       constraint->B_link() = nullptr;
       constraint->eval_link() = nullptr;
       constraint->weight() << 0.0, 0.0, 0.0, 1.0, 1.0, 0.0;
-      constraint->debugLevel() = 2;
+      //constraint->debugLevel() = 2;
       constraints0.push_back(constraint);
     }
     {
@@ -160,147 +160,147 @@ namespace global_inverse_kinematics_solver_sample{
       constraint->field() = field;
       constraint->tolerance() = 0.04;
       constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
-      constraint->debugLevel() = 2;
+      //constraint->debugLevel() = 2;
       constraints0.push_back(constraint);
     }
-    {
-      // pitch > 0
-      std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
-      constraint->A_link() = abstractRobot->rootLink();
-      constraint->A_localpos().translation() = cnoid::Vector3(0.1,0.0,0.0);
-      constraint->B_link() = abstractRobot->rootLink();
-      constraint->eval_link() = nullptr;
-      constraint->weightR().setZero();
-      constraint->C().resize(1,3);
-      constraint->C().insert(0,2) = 1.0;
-      constraint->dl().resize(1);
-      constraint->dl()[0] = -1e10;
-      constraint->du().resize(1);
-      constraint->du()[0] = 0.0;
-      constraint->debugLevel() = 2;
-      constraints0.push_back(constraint);
-    }
-    {
-      // pitch < 90
-      std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
-      constraint->A_link() = abstractRobot->rootLink();
-      constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.1);
-      constraint->B_link() = abstractRobot->rootLink();
-      constraint->eval_link() = nullptr;
-      constraint->weightR().setZero();
-      constraint->C().resize(1,3);
-      constraint->C().insert(0,2) = 1.0;
-      constraint->dl().resize(1);
-      constraint->dl()[0] = -1e10;
-      constraint->du().resize(1);
-      constraint->du()[0] = 0.0;
-      constraint->debugLevel() = 2;
-      constraints0.push_back(constraint);
-    }
-    {
-      // roll = 0
-      std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::make_shared<ik_constraint2::PositionConstraint>();
-      constraint->A_link() = abstractRobot->rootLink();
-      constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.1,0.0);
-      constraint->B_link() = abstractRobot->rootLink();
-      constraint->B_localpos().translation() = cnoid::Vector3(0.0,-0.1,0.0);
-      constraint->eval_link() = nullptr;
-      constraint->weight() << 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
-      constraint->debugLevel() = 2;
-      constraints0.push_back(constraint);
-    }
+    // {
+    //   // pitch > 0
+    //   std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
+    //   constraint->A_link() = abstractRobot->rootLink();
+    //   constraint->A_localpos().translation() = cnoid::Vector3(0.1,0.0,0.0);
+    //   constraint->B_link() = abstractRobot->rootLink();
+    //   constraint->eval_link() = nullptr;
+    //   constraint->weightR().setZero();
+    //   constraint->C().resize(1,3);
+    //   constraint->C().insert(0,2) = 1.0;
+    //   constraint->dl().resize(1);
+    //   constraint->dl()[0] = -1e10;
+    //   constraint->du().resize(1);
+    //   constraint->du()[0] = 0.0;
+    //   //constraint->debugLevel() = 2;
+    //   constraints0.push_back(constraint);
+    // }
+    // {
+    //   // pitch < 90
+    //   std::shared_ptr<ik_constraint2::RegionConstraint> constraint = std::make_shared<ik_constraint2::RegionConstraint>();
+    //   constraint->A_link() = abstractRobot->rootLink();
+    //   constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.0,-0.1);
+    //   constraint->B_link() = abstractRobot->rootLink();
+    //   constraint->eval_link() = nullptr;
+    //   constraint->weightR().setZero();
+    //   constraint->C().resize(1,3);
+    //   constraint->C().insert(0,2) = 1.0;
+    //   constraint->dl().resize(1);
+    //   constraint->dl()[0] = -1e10;
+    //   constraint->du().resize(1);
+    //   constraint->du()[0] = 0.0;
+    //   //constraint->debugLevel() = 2;
+    //   constraints0.push_back(constraint);
+    // }
+    // {
+    //   // roll = 0
+    //   std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::make_shared<ik_constraint2::PositionConstraint>();
+    //   constraint->A_link() = abstractRobot->rootLink();
+    //   constraint->A_localpos().translation() = cnoid::Vector3(0.0,0.1,0.0);
+    //   constraint->B_link() = abstractRobot->rootLink();
+    //   constraint->B_localpos().translation() = cnoid::Vector3(0.0,-0.1,0.0);
+    //   constraint->eval_link() = nullptr;
+    //   constraint->weight() << 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
+    //   //constraint->debugLevel() = 2;
+    //   constraints0.push_back(constraint);
+    // }
 
     {
       std::shared_ptr<ik_constraint2::ORConstraint> orconstraint = std::make_shared<ik_constraint2::ORConstraint>();
-      orconstraint->debugLevel() = 2;
+      //orconstraint->debugLevel() = 2;
       constraints0.push_back(orconstraint);
       {
         // 両足起立
         std::shared_ptr<ik_constraint2::ANDConstraint> andconstraint = std::make_shared<ik_constraint2::ANDConstraint>();
-        andconstraint->debugLevel() = 2;
+        //andconstraint->debugLevel() = 2;
         orconstraint->children().push_back(andconstraint);
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = horizontalRobot->link("RLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->debugLevel() = 0;
           constraint->ignoreDistance() = 1e10;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = horizontalRobot->link("LLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->debugLevel() = 0;
           constraint->ignoreDistance() = 1e10;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
       }
       {
         // 四足
         std::shared_ptr<ik_constraint2::ANDConstraint> andconstraint = std::make_shared<ik_constraint2::ANDConstraint>();
-        andconstraint->debugLevel() = 2;
+        //andconstraint->debugLevel() = 2;
         orconstraint->children().push_back(andconstraint);
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("RLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->ignoreDistance() = 1e10;
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("LLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->ignoreDistance() = 1e10;
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("RARM");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->ignoreDistance() = 1e10;
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
           std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("LARM");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.01;
+          constraint->tolerance() = 0.0;
           constraint->useSingleMesh() = false; // support polygonを個別にチェック
           constraint->invert() = true; // 干渉させる
           constraint->ignoreDistance() = 1e10;
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
-          constraint->debugLevel() = 2;
+          //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
       }
@@ -334,12 +334,13 @@ namespace global_inverse_kinematics_solver_sample{
 
     global_inverse_kinematics_solver::GIKParam param;
     param.debugLevel=0;
-    param.range = 0.3; // 0.2よりも0.3の方が速い
+    param.range = 2.0; // rootlinkのtranslationのuniform samplingの幅が大きすぎて、rangeで縮小すると、rootLinkのrotationの変位が小さくなってしまうことから、rangeは大きい方がいい
     param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
     param.timeout = 30.0;
     param.viewer = viewer;
     param.drawLoop = 1;
     param.maxTranslation = 3.0;
+    //param.pikParam.debugLevel = 2;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
