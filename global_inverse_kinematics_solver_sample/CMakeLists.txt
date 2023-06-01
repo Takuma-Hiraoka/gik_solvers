@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   ik_constraint2_vclip
   ik_constraint2_bullet
   ik_constraint2_distance_field
+  choreonoid_cddlib
   global_inverse_kinematics_solver
   roslib
   choreonoid_viewer

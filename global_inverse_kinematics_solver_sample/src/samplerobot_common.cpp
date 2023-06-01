@@ -12,6 +12,7 @@ namespace global_inverse_kinematics_solver_sample{
 
     cnoid::BodyLoader bodyLoader;
     cnoid::MeshGenerator meshGenerator;
+    meshGenerator.setDivisionNumber(8); // default 20. 20だとcddlibが遅い
 
     robot = bodyLoader.load(ros::package::getPath("choreonoid") + "/share/model/SR1/SR1.body");
     robot->rootLink()->p() = cnoid::Vector3(0,0,0.65);

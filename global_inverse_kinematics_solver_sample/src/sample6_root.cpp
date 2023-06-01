@@ -12,6 +12,7 @@
 #include <ik_constraint2_vclip/ik_constraint2_vclip.h>
 #include <ik_constraint2_bullet/ik_constraint2_bullet.h>
 #include <ik_constraint2_distance_field/ik_constraint2_distance_field.h>
+#include <choreonoid_cddlib/choreonoid_cddlib.h>
 
 #include "samplerobot_common.h"
 
@@ -23,6 +24,7 @@ namespace global_inverse_kinematics_solver_sample{
     generateSampleRobot(robot, abstractRobot, horizontalRobot);
 
     cnoid::MeshGenerator meshGenerator;
+    meshGenerator.setDivisionNumber(8); // default 20. 20だとcddlibが遅い
     cnoid::BodyPtr obstacle = new cnoid::Body();
     {
       cnoid::LinkPtr rootLink = new cnoid::Link();
@@ -220,27 +222,39 @@ namespace global_inverse_kinematics_solver_sample{
         //andconstraint->debugLevel() = 2;
         orconstraint->children().push_back(andconstraint);
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = horizontalRobot->link("RLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
-          constraint->ignoreDistance() = 1e10;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = horizontalRobot->link("LLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
-          constraint->ignoreDistance() = 1e10;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
@@ -252,52 +266,76 @@ namespace global_inverse_kinematics_solver_sample{
         //andconstraint->debugLevel() = 2;
         orconstraint->children().push_back(andconstraint);
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("RLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
-          constraint->ignoreDistance() = 1e10;
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("LLEG");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
-          constraint->ignoreDistance() = 1e10;
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("RARM");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
-          constraint->ignoreDistance() = 1e10;
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
           andconstraint->children().push_back(constraint);
         }
         {
-          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletKeepCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletKeepCollisionConstraint>();
           constraint->A_link() = abstractRobot->link("LARM");
           constraint->B_link() = support->rootLink();
-          constraint->tolerance() = 0.0;
-          constraint->useSingleMesh() = false; // support polygonを個別にチェック
-          constraint->invert() = true; // 干渉させる
-          constraint->ignoreDistance() = 1e10;
+          constraint->useSingleMeshA() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->A_link()->collisionShape(),
+                                                      constraint->A_FACE_C(),
+                                                      constraint->A_FACE_dl(),
+                                                      constraint->A_FACE_du());
+          constraint->useSingleMeshB() = false; // support polygonを個別にチェック
+          choreonoid_cddlib::convertToFACEExpressions(constraint->B_link()->collisionShape(),
+                                                      constraint->B_FACE_C(),
+                                                      constraint->B_FACE_dl(),
+                                                      constraint->B_FACE_du());
           constraint->debugLevel() = 0;
           constraint->updateBounds(); // キャッシュを内部に作る.
           //constraint->debugLevel() = 2;
@@ -338,9 +376,9 @@ namespace global_inverse_kinematics_solver_sample{
     param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
     param.timeout = 30.0;
     param.viewer = viewer;
-    param.drawLoop = 1;
+    param.drawLoop = 10; // 1drawに10msくらいかかることに注意
     param.maxTranslation = 3.0;
-    //param.pikParam.debugLevel = 1;
+    param.pikParam.debugLevel = 1;
     param.pikParam.maxIteration = 15; // collision invertは振動しやすい
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,

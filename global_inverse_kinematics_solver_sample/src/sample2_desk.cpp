@@ -179,6 +179,7 @@ namespace global_inverse_kinematics_solver_sample{
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 10;
+      param.pikParam.debugLevel = 1;
       std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,
