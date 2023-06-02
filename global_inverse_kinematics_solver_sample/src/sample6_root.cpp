@@ -380,6 +380,7 @@ namespace global_inverse_kinematics_solver_sample{
     param.maxTranslation = 3.0;
     param.pikParam.debugLevel = 1;
     param.pikParam.maxIteration = 15; // collision invertは振動しやすい
+    param.threads = 1;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
