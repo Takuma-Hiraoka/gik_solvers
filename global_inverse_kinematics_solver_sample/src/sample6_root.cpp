@@ -373,14 +373,14 @@ namespace global_inverse_kinematics_solver_sample{
     global_inverse_kinematics_solver::GIKParam param;
     param.debugLevel=0;
     param.range = 2.0; // rootlinkのtranslationのuniform samplingの幅が大きすぎて、rangeで縮小すると、rootLinkのrotationの変位が小さくなってしまうことから、rangeは大きい方がいい
-    param.delta = 0.2; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
+    param.delta = 0.1; // 大きければ大きいほど速いが、干渉計算の正確さが犠牲になる
     param.timeout = 30.0;
     param.viewer = viewer;
-    param.drawLoop = 10; // 1drawに10msくらいかかることに注意
+    param.drawLoop = 1; // 1drawに10msくらいかかることに注意
     param.maxTranslation = 3.0;
-    param.pikParam.debugLevel = 1;
+    param.pikParam.debugLevel = 0;
     param.pikParam.maxIteration = 15; // collision invertは振動しやすい
-    param.threads = 1;
+    param.threads = 10;
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,

@@ -80,7 +80,7 @@ namespace global_inverse_kinematics_solver{
       if(loopCount_%drawLoop_==0){
         std::vector<cnoid::SgNodePtr> markers;
         for(int j=0;j<constraints_[m].size();j++){
-          for(int k=0;k<constraints_[m][j].size(); k++){
+          for(int k=0;k<constraints_[m][j].size(); k++){constraints_[m][j][k]->updateBounds();
             const std::vector<cnoid::SgNodePtr>& marker = constraints_[m][j][k]->getDrawOnObjects();
             std::copy(marker.begin(), marker.end(), std::back_inserter(markers));
           }

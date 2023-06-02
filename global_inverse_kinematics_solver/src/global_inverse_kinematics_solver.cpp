@@ -45,17 +45,24 @@ namespace global_inverse_kinematics_solver{
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > nominalss{nominals};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
+    std::vector<std::map<cnoid::BodyPtr, cnoid::BodyPtr> > modelMaps;
     GIKParam param2(param);
     modelQueue->push(0);
 
     if(param.threads >= 2){
       std::set<cnoid::BodyPtr> bodies = getBodies(variables);
+      std::map<cnoid::BodyPtr, cnoid::BodyPtr> modelMap;
+      for(std::set<cnoid::BodyPtr>::iterator it = bodies.begin(); it != bodies.end(); it++){
+        modelMap[*it] = (*it)->clone();
+      }
+      modelMaps.push_back(modelMap); // cloneしたbodyがデストラクトされないように、保管しておく
       for(int i=1;i<param.threads;i++){
         modelQueue->push(i);
         std::map<cnoid::BodyPtr, cnoid::BodyPtr> modelMap;
         for(std::set<cnoid::BodyPtr>::iterator it = bodies.begin(); it != bodies.end(); it++){
           modelMap[*it] = (*it)->clone();
         }
+        modelMaps.push_back(modelMap);
         variabless.push_back(std::vector<cnoid::LinkPtr>(variables.size()));
         for(int v=0;v<variables.size();v++){
           variabless.back()[v] = modelMap[variables[v]->body()]->link(variables[v]->index());
@@ -277,6 +284,7 @@ namespace global_inverse_kinematics_solver{
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
+    std::vector<std::map<cnoid::BodyPtr, cnoid::BodyPtr> > modelMaps;
     GIKParam param2(param);
     modelQueue->push(0);
 
@@ -288,6 +296,7 @@ namespace global_inverse_kinematics_solver{
         for(std::set<cnoid::BodyPtr>::iterator it = bodies.begin(); it != bodies.end(); it++){
           modelMap[*it] = (*it)->clone();
         }
+        modelMaps.push_back(modelMap); // cloneしたbodyがデストラクトされないように、保管しておく
         variabless.push_back(std::vector<cnoid::LinkPtr>(variables.size()));
         for(int v=0;v<variables.size();v++){
           variabless.back()[v] = modelMap[variables[v]->body()]->link(variables[v]->index());
@@ -355,9 +364,15 @@ namespace global_inverse_kinematics_solver{
     problemDefinition->setGoalState(goalState);
 
     ompl::base::PlannerPtr planner;
-    {
+
+    if(param.threads <= 1){
       std::shared_ptr<ompl_near_projection::geometric::NearRRTConnect> planner_ = std::make_shared<ompl_near_projection::geometric::NearRRTConnect>(spaceInformation, false);
       planner_->setRange(param.range);
+      planner = planner_;
+    }else{
+      std::shared_ptr<ompl_near_projection::geometric::pNearRRTConnect> planner_ = std::make_shared<ompl_near_projection::geometric::pNearRRTConnect>(spaceInformation, false);
+      planner_->setRange(param.range);
+      planner_->setThreadCount(param.threads);
       planner = planner_;
     }
 
