@@ -215,19 +215,22 @@ namespace global_inverse_kinematics_solver_sample{
       //param.goalBias = 1.0; // RRTは0.2の方がいい? ESTは0.2の方がいい? KPIECEは
       param.timeout = 30.0;
       param.planner = 0;
+      param.useProjection = false;
+      param.projectionRange = 0.04; // 0.05だと、collision avoidanceがうまくいかず板を貫通する.
+      param.projectionTrapThre = 0.1; // samplerobotは0.01, jaxonは0.03
+      param.nearMaxError = 0.2; // 0.05だと安心だが、0.5くらいまで大きくしてもそんなに不安定にはならず、少し速くなる. weも同時に小さくせよ(1e2だと安心. 1e1でも大丈夫で少し速い). 各constraintのmaxErrorにも注意せよ
       param.projectLink.push_back(goalRaw->A_link());
       param.projectLocalPose = goalRaw->A_localpos();
       param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い? 2m * 2m * 2mの空間を動くとして、samplingを200個くらいまでにしたければ、cellの大きさもそれなりに大きくないとスカスカになってしまう.
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 20;
-      //param.pikParam.we = 5e2;
+      param.pikParam.we = 1e2;
       //param.pikParam.wmax = 1e0;
       param.pikParam.convergeThre = 5e-2; // 2.5e-2は小さすぎる. param.pikParam.debugLevel = 1にして観察せよ. goalのprecision()の値をこれにあわせて大きくせよ
       param.pikParam.debugLevel = 0;
       param.pikParam.pathOutputLoop = 5;
       param.pikParam.satisfiedConvergeLevel = int(constraints.size())-1;
-      //param.nearMaxError = 0.1; // 0.05でも0.1でもそんなに変わらない. 0.1だとQPが不安定になりやすい. 各constraintのmaxErrorも同じ値にせよ
       std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,

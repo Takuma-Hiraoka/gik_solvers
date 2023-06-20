@@ -290,58 +290,67 @@ namespace global_inverse_kinematics_solver{
 
   }
 
+  class JointAngle {
+  public:
+    cnoid::Position T;
+    double q;
+  };
+
   bool GIKConstraint2::projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance) const{
     const unsigned int m = modelQueue_->pop();
 
+    state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
+
     ompl::base::State* current = stateSpace_->allocState();
-    ompl::base::State* tmp_current = stateSpace_->allocState();
-    stateSpace_->copyState(current, near);
+    link2State(variables_[m], stateSpace_, current); // current->intermediateStatesが空であるように
     std::vector<ompl::base::State* > intermediateStates;
     double prevDist = stateSpace_->distance(current, state);
 
-    for(int i=0;i<50;i++){
+    std::vector<JointAngle> prevAngle(variables_[m].size());
+    for(int k=0;k<variables_[m].size();k++){
+      if(variables_[m][k]->isRevoluteJoint() || variables_[m][k]->isPrismaticJoint()) {
+        prevAngle[k].q = variables_[m][k]->q();
+      }else if(variables_[m][k]->isFreeJoint()) {
+        prevAngle[k].T = variables_[m][k]->T();
+      }
+    }
 
-      static_cast<ompl_near_projection::NearProjectedStateSpace*>(stateSpace_)->interpolateRaw(current, state, std::min(1.0, this->projectionRange / prevDist), tmp_current); // 0.1より大きいとcollisionを通過する
-      stateSpace_->copyState(current, tmp_current);
+    for(int loop=0;loop<50;loop++){
+      double prev = variables_[m][1]->q();
+      state2Link(stateSpace_, state, variables_[m]); // spaceとstateの空間をそろえる
+      double tgt = variables_[m][1]->q();
 
-      state2Link(stateSpace_, current, variables_[m]); // spaceとstateの空間をそろえる
+      for(int k=0;k<variables_[m].size();k++){
+        if(variables_[m][k]->isRevoluteJoint() || variables_[m][k]->isPrismaticJoint()) {
+          variables_[m][k]->q() = std::min(std::max(variables_[m][k]->q(), prevAngle[k].q - this->projectionRange), prevAngle[k].q + this->projectionRange);
+        }else if(variables_[m][k]->isFreeJoint()) {
+          for(int j=0;j<3;j++){
+            variables_[m][k]->p()[j] = std::min(std::max(variables_[m][k]->p()[j], prevAngle[k].T.translation()[j] - this->projectionRange), prevAngle[k].T.translation()[j] + this->projectionRange);
+          }
+          cnoid::AngleAxisd w(prevAngle[k].T.linear().transpose() * variables_[m][k]->R());
+          variables_[m][k]->R() = prevAngle[k].T.linear() * cnoid::AngleAxisd(std::min(std::max(w.angle(), - this->projectionRange), this->projectionRange), w.axis());
+        }
+      }
 
       {
         // setup nearConstraints
         std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nearConstraints = ikConstraints_[m].back();
-        nearConstraints.resize(variables_[m].size());
-        for(int i=0;i<variables_[m].size();i++){
-          if(variables_[m][i]->isRevoluteJoint() || variables_[m][i]->isPrismaticJoint()){
-            std::shared_ptr<ik_constraint2::JointAngleConstraint> constraint = std::dynamic_pointer_cast<ik_constraint2::JointAngleConstraint>(nearConstraints[i]);
-            if(constraint == nullptr) {
-              nearConstraints[i] = constraint = std::make_shared<ik_constraint2::JointAngleConstraint>();
-            }
-            constraint->joint() = variables_[m][i];
-            constraint->targetq() = variables_[m][i]->q();
-            constraint->precision() = 1e10; // always satisfied
-            constraint->maxError() = nearMaxError_;
-
-          }else if(variables_[m][i]->isFreeJoint()) {
-            std::shared_ptr<ik_constraint2::PositionConstraint> constraint = std::dynamic_pointer_cast<ik_constraint2::PositionConstraint>(nearConstraints[i]);
-            if(constraint == nullptr) {
-              nearConstraints[i] = constraint = std::make_shared<ik_constraint2::PositionConstraint>();
-            }
-            constraint->A_link() = variables_[m][i];
-            constraint->B_localpos() = variables_[m][i]->T();
-            constraint->precision() = 1e10; // always satisfied
-            constraint->maxError() << nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_, nearMaxError_;
-          }else{
-            std::cerr << "[GIKConstraint::projectNear] something is wrong" << std::endl;
-          }
-        }
+        nearConstraints.clear();
       }
-
       std::shared_ptr<std::vector<std::vector<double> > > path;
       bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
                                                                         ikConstraints_[m],
                                                                         tasks_[m],
                                                                         param_,
                                                                         path);
+
+      for(int k=0;k<variables_[m].size();k++){
+        if(variables_[m][k]->isRevoluteJoint() || variables_[m][k]->isPrismaticJoint()) {
+          prevAngle[k].q = variables_[m][k]->q();
+        }else if(variables_[m][k]->isFreeJoint()) {
+          prevAngle[k].T = variables_[m][k]->T();
+        }
+      }
 
       link2State(variables_[m], stateSpace_, current); // spaceとstateの空間をそろえる
 
@@ -356,9 +365,10 @@ namespace global_inverse_kinematics_solver{
       if(reject) break;
 
       double dist = stateSpace_->distance(current, state);
+
       if(dist < prevDist - this->projectionTrapThre) { // srは0.01, jは0.03
         ompl::base::State* st = stateSpace_->allocState();
-        stateSpace_->copyState(st, current);
+        stateSpace_->copyState(st, current); // current->intermediateStatesが空であるように
         intermediateStates.push_back(st);
 
         prevDist = dist;
@@ -416,7 +426,6 @@ namespace global_inverse_kinematics_solver{
     }
 
     stateSpace_->freeState(current);
-    stateSpace_->freeState(tmp_current);
     for(int i=0;i<intermediateStates.size();i++){
       stateSpace_->freeState(intermediateStates[i]);
     }
