@@ -13,7 +13,7 @@
 #include <choreonoid_bullet/choreonoid_bullet.h>
 
 namespace global_inverse_kinematics_solver_sample{
-  void sample4_jaxon(){
+  void sample4_jaxon(bool rejection){
     cnoid::BodyLoader bodyLoader;
 
     // load robot
@@ -35,6 +35,7 @@ namespace global_inverse_kinematics_solver_sample{
 
 
     // setup constraints
+    std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
     std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > constraints0;
     std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > constraints1; // 自己干渉のvclip計算などに時間がかかるので、使いまわしたほうがいい. collisionはsoft constraintにした方が安定する
 
@@ -65,7 +66,11 @@ namespace global_inverse_kinematics_solver_sample{
         constraint->B_bulletModel().push_back(collisionModels[constraint->B_link()]);
         constraint->tolerance() = 0.01;
         constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
-        constraints1.push_back(constraint);
+        if(rejection){
+          rejections.push_back(constraint);
+        }else{
+          constraints1.push_back(constraint);
+        }
       }
     }
 
@@ -95,7 +100,11 @@ namespace global_inverse_kinematics_solver_sample{
         constraint->field() = field;
         constraint->tolerance() = 0.03;
         constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
-        constraints1.push_back(constraint);
+        if(rejection){
+          rejections.push_back(constraint);
+        }else{
+          constraints1.push_back(constraint);
+        }
 
       }
     }
@@ -224,6 +233,7 @@ namespace global_inverse_kinematics_solver_sample{
                                                                constraints,
                                                                goals,
                                                                nominals,
+                                                               rejections,
                                                                param,
                                                                path);
 
@@ -250,6 +260,7 @@ namespace global_inverse_kinematics_solver_sample{
                                                                 constraints,
                                                                 goals,
                                                                 nominals,
+                                                                rejections,
                                                                 param,
                                                                 path2);
       std::copy(path2->begin(), path2->end(), std::back_inserter(*path));
