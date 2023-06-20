@@ -12,12 +12,13 @@ namespace global_inverse_kinematics_solver{
 
   class GIKConstraint : public ompl_near_projection::NearConstraint{
   public:
-    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables) :
+    GIKConstraint(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& rejections) :
       NearConstraint(1,0,0), // 3つの引数は使われないので適当に与える
       ambientSpace_(ambientSpace),
       modelQueue_(modelQueue),
       variables_(variables),
-      constraints_(constraints)
+      constraints_(constraints),
+      rejections_(rejections)
     {
 
 
@@ -58,6 +59,7 @@ namespace global_inverse_kinematics_solver{
     mutable std::shared_ptr<UintQueue> modelQueue_;
     const std::vector<std::vector<cnoid::LinkPtr> > variables_;
     const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraints_;
+    const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > rejections_;
     std::vector<std::set<cnoid::BodyPtr> > bodies_;
     mutable std::vector<std::vector<std::shared_ptr<prioritized_qp_base::Task> > > tasks_;
     // constraintsの末尾にJointAngleConstraintを加えたもの
@@ -74,12 +76,15 @@ namespace global_inverse_kinematics_solver{
   OMPL_CLASS_FORWARD(GIKConstraint2); // GIKConstraint2Ptrを定義. (shared_ptr)
   class GIKConstraint2 : public GIKConstraint{
   public:
-    GIKConstraint2(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables) :
-      GIKConstraint(ambientSpace, modelQueue, constraints,  variables)
+    GIKConstraint2(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& rejections) :
+      GIKConstraint(ambientSpace, modelQueue, constraints,  variables, rejections)
     {
     }
 
     virtual bool projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance = nullptr) const override;
+
+    double projectionRange = 0.2;
+    double projectionTrapThre = 0.03;
   };
 };
 

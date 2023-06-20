@@ -48,6 +48,7 @@ namespace global_inverse_kinematics_solver{
     if(tmp_state) path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
                                                                       ikConstraints_[m],
+                                                                      rejections_[m],
                                                                       tasks_[m],
                                                                       param_,
                                                                       path);
@@ -116,6 +117,7 @@ namespace global_inverse_kinematics_solver{
     if(tmp_state) path = std::make_shared<std::vector<std::vector<double> > >();
     bool solved = prioritized_inverse_kinematics_solver2::solveIKLoop(variables_[m],
                                                                       ikConstraints_[m],
+                                                                      rejections_[m],
                                                                       tasks_[m],
                                                                       param_,
                                                                       path);
@@ -280,7 +282,7 @@ namespace global_inverse_kinematics_solver{
 
     for(int i=0;i<50;i++){
 
-      static_cast<ompl_near_projection::NearProjectedStateSpace*>(stateSpace_)->interpolateRaw(current, state, std::min(1.0, 0.2 / prevDist), tmp_current); // 0.1より大きいとcollisionを通過する
+      static_cast<ompl_near_projection::NearProjectedStateSpace*>(stateSpace_)->interpolateRaw(current, state, std::min(1.0, this->projectionRange / prevDist), tmp_current); // 0.1より大きいとcollisionを通過する
       stateSpace_->copyState(current, tmp_current);
 
       state2Link(stateSpace_, current, variables_[m]); // spaceとstateの空間をそろえる
@@ -324,8 +326,18 @@ namespace global_inverse_kinematics_solver{
 
       link2State(variables_[m], stateSpace_, current); // spaceとstateの空間をそろえる
 
+      bool reject = false;
+      for(size_t i=0;i<rejections_[m].size();i++){
+        rejections_[m][i]->updateBounds();
+        if(!rejections_[m][i]->isSatisfied()) {
+          reject = true;
+          break;
+        }
+      }
+      if(reject) break;
+
       double dist = stateSpace_->distance(current, state);
-      if(dist < prevDist - 0.03) { // srは0.01, jは0.03
+      if(dist < prevDist - this->projectionTrapThre) { // srは0.01, jは0.03
         ompl::base::State* st = stateSpace_->allocState();
         stateSpace_->copyState(st, current);
         intermediateStates.push_back(st);

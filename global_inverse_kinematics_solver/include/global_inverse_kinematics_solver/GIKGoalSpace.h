@@ -10,7 +10,7 @@ namespace global_inverse_kinematics_solver{
 
   class GIKGoalSpace : public ompl_near_projection::NearGoalSpace{
   public:
-    GIKGoalSpace(const ompl::base::SpaceInformationPtr &si, const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals) :
+    GIKGoalSpace(const ompl::base::SpaceInformationPtr &si, const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals, const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& rejections) :
       NearGoalSpace(si),
       modelQueue_(modelQueue),
       variables_(variables),
@@ -24,7 +24,7 @@ namespace global_inverse_kinematics_solver{
       for(int i=0;i<goalConstraints.size();i++){
         goalConstraints[i].push_back(goals[i]);
       }
-      GIKConstraintPtr goalGIKConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, goalConstraints, variables);
+      GIKConstraintPtr goalGIKConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, goalConstraints, variables, rejections);
       goalGIKConstraint->nominalConstraints() = nominals;
       goalStateSpace_ = std::make_shared<GIKStateSpace>(ambientSpace, goalGIKConstraint);
     }

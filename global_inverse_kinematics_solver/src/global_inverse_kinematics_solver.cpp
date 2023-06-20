@@ -6,13 +6,24 @@
 #include <ompl/geometric/PathSimplifier.h>
 
 namespace global_inverse_kinematics_solver{
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, // 0: constriant priority 1: constraints
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& goals, // 0: goals(AND).
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals, // 0: nominals
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){ // 0: states. 1: angles
+    std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
+    return solveGIK(variables, constraints, goals, nominals, rejections, param, path);
+  }
+
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
                 const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& goals,
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& rejections, // 0: rejections
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
-    return solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path});
+    return solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, rejections, param, std::vector<std::shared_ptr<std::vector<std::vector<double> > > >{path});
   }
 
   bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
@@ -21,9 +32,20 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){
+    std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
+    return solveGIK(variables, constraints, goals, nominals, rejections, param, path);
+  }
+
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& rejections, // 0: rejections
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){
     std::vector<std::shared_ptr<std::vector<std::vector<double> > > > paths;
     for(int i=0;i<goals.size();i++) paths.push_back(std::make_shared<std::vector<std::vector<double> > >());
-    bool ret = solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, param, paths, false);
+    bool ret = solveGIK(variables, constraints, std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >{goals}, nominals, rejections, param, paths, false);
     for(int i=0;i<goals.size();i++){
       if(paths[i]->size()>0){
         *path = *(paths[i]);
@@ -40,10 +62,23 @@ namespace global_inverse_kinematics_solver{
                 const GIKParam& param,
                 const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
                 bool findAllSolution){
+    std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
+    return solveGIK(variables, constraints, goals, nominals, rejections, param, path, findAllSolution);
+  }
+
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints,
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& goals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& nominals,
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& rejections, // 0: rejections
+                const GIKParam& param,
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
+                bool findAllSolution){
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > goalss{goals};
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > nominalss{nominals};
+    std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > rejectionss{rejections};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
     std::vector<std::map<cnoid::BodyPtr, cnoid::BodyPtr> > modelMaps;
     GIKParam param2(param);
@@ -85,6 +120,10 @@ namespace global_inverse_kinematics_solver{
         for(int j=0;j<nominals.size();j++){
           nominalss.back()[j] = nominals[j]->clone(modelMap);
         }
+        rejectionss.push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >(rejections.size()));
+        for(int j=0;j<rejections.size();j++){
+          rejectionss.back()[j] = rejections[j]->clone(modelMap);
+        }
         if(param.projectLink.size() == 1){
           param2.projectLink.push_back(modelMap[param.projectLink[0]->body()]->link(param.projectLink[0]->index()));
         }
@@ -95,6 +134,7 @@ namespace global_inverse_kinematics_solver{
                     constraintss,
                     goalss,
                     nominalss,
+                    rejectionss,
                     modelQueue,
                     param2,
                     path,
@@ -109,10 +149,25 @@ namespace global_inverse_kinematics_solver{
                 const GIKParam& param,
                 const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
                 bool findAllSolution){
+    std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > rejections(variables.size());
+    solveGIK(variables, constraints, goals, nominals, rejections, modelQueue, param, path, findAllSolution);
+  }
+
+
+  bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables, // 0: modelQueue, 1: variables
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, // 0: modelQueue, 1: constriant priority 2: constraints
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& goals, // 0: modelQueue. 1: goalSpace(OR). 2: goals(AND).
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& nominals, // 0: modelQueue, 1: nominals
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& rejections, // 0: modelQueue, 1: rejections
+                std::shared_ptr<UintQueue> modelQueue,
+                const GIKParam& param,
+                const std::vector<std::shared_ptr<std::vector<std::vector<double> > > >& path,
+                bool findAllSolution){
     if((variables.size() == 0) ||
        (variables.size() != constraints.size()) ||
        (constraints.size() != goals.size()) ||
-       (goals.size() != nominals.size())
+       (goals.size() != nominals.size()) ||
+       (nominals.size() != rejections.size())
        ){
       std::cerr << "[solveGIK] size mismatch" << std::endl;
       return false;
@@ -129,7 +184,13 @@ namespace global_inverse_kinematics_solver{
     }
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables[0], param.maxTranslation);
-    GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables);
+    GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables, rejections);
+    if(param.useProjection){
+      GIKConstraint2Ptr gikConstraint_ = std::make_shared<GIKConstraint2>(ambientSpace, modelQueue, constraints, variables, rejections);
+      gikConstraint_->projectionRange = param.projectionRange;
+      gikConstraint_->projectionTrapThre = param.projectionTrapThre;
+      gikConstraint = gikConstraint_;
+    }
     gikConstraint->viewer() = param.viewer;
     gikConstraint->drawLoop() = param.drawLoop;
     gikConstraint->param() = param.pikParam;
@@ -153,7 +214,7 @@ namespace global_inverse_kinematics_solver{
     for(int i=0;i<goals[0].size();i++){
       std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > goal_(goals.size()); // 0: modelQueue, q: goals(AND)
       for(int m=0;m<goals.size();m++) goal_[m] = goals[m][i];
-      GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation, ambientSpace, modelQueue, constraints, variables, goal_, nominals);
+      GIKGoalSpacePtr goal = std::make_shared<GIKGoalSpace>(spaceInformation, ambientSpace, modelQueue, constraints, variables, goal_, nominals, rejections);
       goal->setViewer(param.viewer);
       goal->setDrawLoop(param.drawLoop);
       goal->setParam(param.pikParam);
@@ -310,8 +371,19 @@ namespace global_inverse_kinematics_solver{
                 const std::vector<double>& goal, // 0: angles.
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){ // 0: states. 1: angles
+    std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
+    return solveGIK(variables, constraints, rejections, goal, param, path);
+  }
+
+  bool solveGIK(const std::vector<cnoid::LinkPtr>& variables, // 0: variables
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints, // 0: constriant priority 1: constraints
+                const std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >& rejections, // 0: constriant priority 1: rejections
+                const std::vector<double>& goal, // 0: angles.
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){ // 0: states. 1: angles
     std::vector<std::vector<cnoid::LinkPtr> > variabless{variables};
     std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > > constraintss{constraints};
+    std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > rejectionss{rejections};
     std::shared_ptr<UintQueue> modelQueue = std::make_shared<UintQueue>();
     std::vector<std::map<cnoid::BodyPtr, cnoid::BodyPtr> > modelMaps;
     GIKParam param2(param);
@@ -337,6 +409,10 @@ namespace global_inverse_kinematics_solver{
             constraintss.back()[j][k] = constraints[j][k]->clone(modelMap);
           }
         }
+        rejectionss.push_back(std::vector<std::shared_ptr<ik_constraint2::IKConstraint> >(rejections.size()));
+        for(int j=0;j<rejections.size();j++){
+          rejectionss.back()[j] = rejections[j]->clone(modelMap);
+        }
         if(param.projectLink.size() == 1){
           param2.projectLink.push_back(modelMap[param.projectLink[0]->body()]->link(param.projectLink[0]->index()));
         }
@@ -345,6 +421,7 @@ namespace global_inverse_kinematics_solver{
 
     return solveGIK(variabless,
                     constraintss,
+                    rejectionss,
                     goal,
                     modelQueue,
                     param2,
@@ -357,8 +434,20 @@ namespace global_inverse_kinematics_solver{
                 std::shared_ptr<UintQueue> modelQueue,
                 const GIKParam& param,
                 std::shared_ptr<std::vector<std::vector<double> > > path){ // 0: states. 1: angles
+    std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > rejections(variables.size());
+    return solveGIK(variables, constraints, rejections, goal, modelQueue, param, path);
+  }
+
+  bool solveGIK(const std::vector<std::vector<cnoid::LinkPtr> >& variables, // 0: modelQueue, 1: variables
+                const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, // 0: modelQueue, 1: constriant priority 2: constraints
+                const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& rejections, // 0: modelQueue, 1: rejections
+                const std::vector<double>& goal, // 0: angles.
+                std::shared_ptr<UintQueue> modelQueue,
+                const GIKParam& param,
+                std::shared_ptr<std::vector<std::vector<double> > > path){ // 0: states. 1: angles
     if((variables.size() == 0) ||
-       (variables.size() != constraints.size())){
+       (variables.size() != constraints.size()) ||
+       (variables.size() != rejections.size())){
       std::cerr << "[solveGIK] size mismatch" << std::endl;
       return false;
     }
@@ -369,7 +458,7 @@ namespace global_inverse_kinematics_solver{
     }
 
     ompl::base::StateSpacePtr ambientSpace = createAmbientSpace(variables[0], param.maxTranslation);
-    GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables);
+    GIKConstraintPtr gikConstraint = std::make_shared<GIKConstraint>(ambientSpace, modelQueue, constraints, variables, rejections);
     gikConstraint->viewer() = param.viewer;
     gikConstraint->drawLoop() = param.drawLoop;
     gikConstraint->param() = param.pikParam;
