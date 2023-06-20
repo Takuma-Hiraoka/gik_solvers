@@ -206,19 +206,18 @@ namespace global_inverse_kinematics_solver{
         planner = planner_;
       }
     }else if(param.planner == 2){
-      if(true/*param.threads <= 1*/){
+      if(param.threads <= 1){
         std::shared_ptr<ompl_near_projection::geometric::NearRRT> planner_ = std::make_shared<ompl_near_projection::geometric::NearRRT>(spaceInformation);
         planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
         planner_->setGoalBias(param.goalBias);
         planner = planner_;
+      }else{
+        std::shared_ptr<ompl_near_projection::geometric::pNearRRT> planner_ = std::make_shared<ompl_near_projection::geometric::pNearRRT>(spaceInformation);
+        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+        planner_->setGoalBias(param.goalBias);
+        planner_->setThreadCount(param.threads);
+        planner = planner_;
       }
-      // else{
-      //   std::shared_ptr<ompl_near_projection::geometric::pNearEST> planner_ = std::make_shared<ompl_near_projection::geometric::pNearEST>(spaceInformation);
-      //   planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-      //   planner_->setGoalBias(param.goalBias);
-      //   planner_->setThreadCount(param.threads);
-      //   planner = planner_;
-      // }
     }else{
       std::cerr << "invalid planner" << std::endl;
       return false;
