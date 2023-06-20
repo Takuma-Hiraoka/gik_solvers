@@ -183,6 +183,10 @@ namespace global_inverse_kinematics_solver{
         squaredDistance += std::pow(constraints_[m][i][j]->distance(), 2.0);
       }
     }
+    for(size_t i=0;i<rejections_[m].size();i++){
+      rejections_[m][i]->updateBounds();
+      squaredDistance += std::pow(rejections_[m][i]->distance(), 2.0);
+    }
     modelQueue_->push(m);
     return std::sqrt(squaredDistance);
   }
@@ -207,6 +211,16 @@ namespace global_inverse_kinematics_solver{
           }
           satisfied = false;
         }
+      }
+    }
+    for(size_t i=0;i<rejections_[m].size();i++){
+      rejections_[m][i]->updateBounds();
+      if(!rejections_[m][i]->isSatisfied()) {
+        if(viewer_ == nullptr || m!=0) {
+          modelQueue_->push(m);
+          return false;
+        }
+        satisfied = false;
       }
     }
 
@@ -248,6 +262,11 @@ namespace global_inverse_kinematics_solver{
         if(!constraints_[m][i][j]->isSatisfied()) isSatisfied = false;
         squaredDistance += std::pow(constraints_[m][i][j]->distance(), 2.0);
       }
+    }
+    for(size_t i=0;i<rejections_[m].size();i++){
+      rejections_[m][i]->updateBounds();
+      if(!rejections_[m][i]->isSatisfied()) isSatisfied = false;
+      squaredDistance += std::pow(rejections_[m][i]->distance(), 2.0);
     }
 
     *distance = std::sqrt(squaredDistance);

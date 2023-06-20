@@ -58,6 +58,7 @@ add_library(CnoidGlobalInverseKinematicsSolverSamplePlugin SHARED
   src/sample5_jaxon.cpp
   src/samplerobot_common.cpp
   src/sample6_root.cpp
+  src/sample7_rootrej.cpp
 )
 target_link_libraries(CnoidGlobalInverseKinematicsSolverSamplePlugin
   ${catkin_LIBRARIES}
