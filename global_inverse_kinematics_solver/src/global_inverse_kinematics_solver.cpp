@@ -164,34 +164,64 @@ namespace global_inverse_kinematics_solver{
 
     ompl::base::PlannerPtr planner;
 
-    if(param.projectLink.size() == variables.size()){
-      GIKProjectionEvaluatorPtr proj = std::make_shared<GIKProjectionEvaluator>(stateSpace, modelQueue, variables);
-      proj->parentLink() = param.projectLink;
-      proj->localPos() = param.projectLocalPose;
-      proj->setCellSizes(std::vector<double>(proj->getDimension(), param.projectCellSize));
+    if(param.planner == 0){
+      if(param.projectLink.size() == variables.size()){
+        GIKProjectionEvaluatorPtr proj = std::make_shared<GIKProjectionEvaluator>(stateSpace, modelQueue, variables);
+        proj->parentLink() = param.projectLink;
+        proj->localPos() = param.projectLocalPose;
+        proj->setCellSizes(std::vector<double>(proj->getDimension(), param.projectCellSize));
 
-      if(param.threads <= 1){
-        std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(spaceInformation);
-        planner_->setProjectionEvaluator(proj);
-        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-        planner_->setGoalBias(param.goalBias);
+        if(param.threads <= 1){
+          std::shared_ptr<ompl_near_projection::geometric::NearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::NearKPIECE1>(spaceInformation);
+          planner_->setProjectionEvaluator(proj);
+          planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+          planner_->setGoalBias(param.goalBias);
 
-        planner = planner_;
+          planner = planner_;
 
+        }else{
+          std::shared_ptr<ompl_near_projection::geometric::pNearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::pNearKPIECE1>(spaceInformation);
+          planner_->setProjectionEvaluator(proj);
+          planner_->setThreadCount(param.threads);
+          planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+          planner_->setGoalBias(param.goalBias);
+          planner = planner_;
+
+        }
       }else{
-        std::shared_ptr<ompl_near_projection::geometric::pNearKPIECE1> planner_ = std::make_shared<ompl_near_projection::geometric::pNearKPIECE1>(spaceInformation);
-        planner_->setProjectionEvaluator(proj);
-        planner_->setThreadCount(param.threads);
+        std::cerr << "projectLink is not valid" << std::endl;
+        return false;
+      }
+    }else if(param.planner == 1){
+      if(param.threads <= 1){
+        std::shared_ptr<ompl_near_projection::geometric::NearEST> planner_ = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
         planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
         planner_->setGoalBias(param.goalBias);
         planner = planner_;
-
+      }else{
+        std::shared_ptr<ompl_near_projection::geometric::pNearEST> planner_ = std::make_shared<ompl_near_projection::geometric::pNearEST>(spaceInformation);
+        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+        planner_->setGoalBias(param.goalBias);
+        planner_->setThreadCount(param.threads);
+        planner = planner_;
       }
+    }else if(param.planner == 2){
+      if(true/*param.threads <= 1*/){
+        std::shared_ptr<ompl_near_projection::geometric::NearRRT> planner_ = std::make_shared<ompl_near_projection::geometric::NearRRT>(spaceInformation);
+        planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+        planner_->setGoalBias(param.goalBias);
+        planner = planner_;
+      }
+      // else{
+      //   std::shared_ptr<ompl_near_projection::geometric::pNearEST> planner_ = std::make_shared<ompl_near_projection::geometric::pNearEST>(spaceInformation);
+      //   planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
+      //   planner_->setGoalBias(param.goalBias);
+      //   planner_->setThreadCount(param.threads);
+      //   planner = planner_;
+      // }
     }else{
-      std::shared_ptr<ompl_near_projection::geometric::NearEST> planner_ = std::make_shared<ompl_near_projection::geometric::NearEST>(spaceInformation);
-      planner_->setRange(param.range); // This parameter greatly influences the runtime of the algorithm. It represents the maximum length of a motion to be added in the tree of motions.
-      planner_->setGoalBias(param.goalBias);
-      planner = planner_;
+      std::cerr << "invalid planner" << std::endl;
+      return false;
     }
 
     if(!spaceInformation->isSetup()) spaceInformation->setup();
