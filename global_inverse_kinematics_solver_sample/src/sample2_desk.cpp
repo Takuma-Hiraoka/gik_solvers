@@ -8,6 +8,7 @@
 #include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
 #include <ik_constraint2/ik_constraint2.h>
 #include <ik_constraint2_vclip/ik_constraint2_vclip.h>
+#include <ik_constraint2_bullet/ik_constraint2_bullet.h>
 
 namespace global_inverse_kinematics_solver_sample{
   void sample2_desk(){
@@ -78,7 +79,7 @@ namespace global_inverse_kinematics_solver_sample{
         for(int i=0;i<rleg.size();i++) for(int j=0;j<lleg.size();j++) pairs.push_back(std::vector<std::string>{rleg[i],lleg[j]});
 
         for(int i=0;i<pairs.size();i++){
-          std::shared_ptr<ik_constraint2_vclip::VclipCollisionConstraint> constraint = std::make_shared<ik_constraint2_vclip::VclipCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = robot->link(pairs[i][0]);
           constraint->B_link() = robot->link(pairs[i][1]);
           constraint->tolerance() = 0.01;
@@ -89,7 +90,7 @@ namespace global_inverse_kinematics_solver_sample{
       {
         // task: env collision
         for(int i=0;i<robot->numLinks();i++){
-          std::shared_ptr<ik_constraint2_vclip::VclipCollisionConstraint> constraint = std::make_shared<ik_constraint2_vclip::VclipCollisionConstraint>();
+          std::shared_ptr<ik_constraint2_bullet::BulletCollisionConstraint> constraint = std::make_shared<ik_constraint2_bullet::BulletCollisionConstraint>();
           constraint->A_link() = robot->link(i);
           constraint->B_link() = desk->rootLink();
           constraint->tolerance() = 0.03;
@@ -176,10 +177,11 @@ namespace global_inverse_kinematics_solver_sample{
       param.projectLink.push_back(goalRaw->A_link());
       param.projectLocalPose = goalRaw->A_localpos();
       param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
+      param.pikParam.satisfiedConvergeLevel = int(constraints.size())-1;
+      param.pikParam.debugLevel = 0;
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 10;
-      param.pikParam.debugLevel = 1;
       std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
       bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                                constraints,

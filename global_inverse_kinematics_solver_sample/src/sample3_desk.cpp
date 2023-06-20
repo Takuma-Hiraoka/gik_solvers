@@ -176,6 +176,7 @@ namespace global_inverse_kinematics_solver_sample{
       param.projectLink.push_back(goalRaw->A_link());
       param.projectLocalPose = goalRaw->A_localpos();
       param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い
+      param.pikParam.satisfiedConvergeLevel = int(constraints.size())-1;
       param.viewer = viewer;
       param.drawLoop = 1;
       param.threads = 10;

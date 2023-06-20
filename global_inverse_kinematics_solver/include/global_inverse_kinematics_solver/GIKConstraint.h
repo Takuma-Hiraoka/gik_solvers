@@ -70,6 +70,17 @@ namespace global_inverse_kinematics_solver{
     unsigned int drawLoop_ = 100;
     double nearMaxError_ = 0.05;
   };
+
+  OMPL_CLASS_FORWARD(GIKConstraint2); // GIKConstraint2Ptrを定義. (shared_ptr)
+  class GIKConstraint2 : public GIKConstraint{
+  public:
+    GIKConstraint2(const ompl::base::StateSpacePtr ambientSpace, std::shared_ptr<UintQueue>& modelQueue, const std::vector<std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > >& constraints, const std::vector<std::vector<cnoid::LinkPtr> >& variables) :
+      GIKConstraint(ambientSpace, modelQueue, constraints,  variables)
+    {
+    }
+
+    virtual bool projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance = nullptr) const override;
+  };
 };
 
 #endif
