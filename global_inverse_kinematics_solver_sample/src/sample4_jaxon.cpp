@@ -98,7 +98,7 @@ namespace global_inverse_kinematics_solver_sample{
         std::shared_ptr<ik_constraint2_distance_field::DistanceFieldCollisionConstraint> constraint = std::make_shared<ik_constraint2_distance_field::DistanceFieldCollisionConstraint>();
         constraint->A_link() = robot->link(i);
         constraint->field() = field;
-        constraint->tolerance() = 0.03;
+        constraint->tolerance() = 0.04; // resolutionの倍数にせよ. 境界で振動する.
         constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
         if(rejection){
           rejections.push_back(constraint);
@@ -210,7 +210,7 @@ namespace global_inverse_kinematics_solver_sample{
       global_inverse_kinematics_solver::GIKParam param;
       param.debugLevel=0;
       param.range = 0.5; // 0.2よりも0.3の方が速い. sample一回につきprojectGoalを行うので、rangeはなるべく大きい方がいい.
-      param.delta = 0.4; // 大きければ大きいほど速いはずだが、干渉計算や補間の正確さが犠牲になる. 0.2だと正確. 0.4だと速い
+      param.delta = 0.2; // 大きければ大きいほど速いはずだが、干渉計算や補間の正確さが犠牲になる. 0.2だと正確. 0.4だと速いが薄い障害物をsimplify時に貫通する.
       param.goalBias = 0.2; // 0.05よりも0.2や0.3の方が速い. goalSampingはIKの変位が大きいので、この値が大きいとsample1回あたりの時間が長くなるデメリットもある.
       //param.goalBias = 1.0; // RRTは0.2の方がいい? ESTは0.2の方がいい? KPIECEは
       param.timeout = 30.0;
