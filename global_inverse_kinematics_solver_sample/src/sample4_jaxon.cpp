@@ -218,7 +218,7 @@ namespace global_inverse_kinematics_solver_sample{
       param.useProjection = false;
       param.projectionRange = 0.04; // 0.05だと、collision avoidanceがうまくいかず板を貫通する.
       param.projectionTrapThre = 0.1; // samplerobotは0.01, jaxonは0.03
-      param.nearMaxError = 0.2; // 0.05だと安心だが、0.5くらいまで大きくしてもそんなに不安定にはならず、少し速くなる. weも同時に小さくせよ(1e2だと安心. 1e1でも大丈夫で少し速い). 各constraintのmaxErrorにも注意せよ
+      param.nearMaxError = 0.05; // 0.05だと安心. 0.2だと薄い障害物を貫通する. weも同時に小さくせよ(1e2だと安心. 1e1でも大丈夫で少し速い). 各constraintのmaxErrorにも注意せよ
       param.projectLink.push_back(goalRaw->A_link());
       param.projectLocalPose = goalRaw->A_localpos();
       param.projectCellSize = 0.2; // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い? 2m * 2m * 2mの空間を動くとして、samplingを200個くらいまでにしたければ、cellの大きさもそれなりに大きくないとスカスカになってしまう.
