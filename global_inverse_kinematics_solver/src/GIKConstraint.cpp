@@ -53,27 +53,29 @@ namespace global_inverse_kinematics_solver{
                                                                       param_,
                                                                       path);
 
-    bool satisfied = true;
-    for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
-      for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
-        if(!constraints_[m][i][j]->isSatisfied()) {
+    if(rejections_[m].size() == 0){ // いまのprioritized_inverse_kinematics_solver2の仕様上やむをえない
+      bool satisfied = true;
+      for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
+        for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
+          if(!constraints_[m][i][j]->isSatisfied()) {
+            satisfied = false;
+          }
+        }
+      }
+      for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
+        if(!rejections_[m][i]->isSatisfied()) {
           satisfied = false;
         }
       }
-    }
-    for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
-      if(!rejections_[m][i]->isSatisfied()) {
-        satisfied = false;
-      }
-    }
-    if(!satisfied) {
-      state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
-      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
-        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
-        (*it)->calcCenterOfMass();
-      }
-      if(param_.debugLevel >= 1){
-        std::cerr << "!satisfied" << std::endl;
+      if(!satisfied) {
+        state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
+        for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+          (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+          (*it)->calcCenterOfMass();
+        }
+        if(param_.debugLevel >= 1){
+          std::cerr << "!satisfied" << std::endl;
+        }
       }
     }
 
@@ -147,27 +149,29 @@ namespace global_inverse_kinematics_solver{
                                                                       param_,
                                                                       path);
 
-    bool satisfied = true;
-    for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
-      for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
-        if(!constraints_[m][i][j]->isSatisfied()) {
+    if(rejections_[m].size() == 0){ // いまのprioritized_inverse_kinematics_solver2の仕様上やむをえない
+      bool satisfied = true;
+      for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
+        for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
+          if(!constraints_[m][i][j]->isSatisfied()) {
+            satisfied = false;
+          }
+        }
+      }
+      for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
+        if(!rejections_[m][i]->isSatisfied()) {
           satisfied = false;
         }
       }
-    }
-    for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
-      if(!rejections_[m][i]->isSatisfied()) {
-        satisfied = false;
-      }
-    }
-    if(!satisfied) {
-      state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
-      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
-        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
-        (*it)->calcCenterOfMass();
-      }
-      if(param_.debugLevel >= 1){
-        std::cerr << "!satisfied" << std::endl;
+      if(!satisfied) {
+        state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
+        for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+          (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+          (*it)->calcCenterOfMass();
+        }
+        if(param_.debugLevel >= 1){
+          std::cerr << "!satisfied" << std::endl;
+        }
       }
     }
 
