@@ -41,6 +41,9 @@ namespace global_inverse_kinematics_solver{
     virtual bool isSatisfied (const ompl::base::State *state) const override;
     virtual bool isSatisfied (const ompl::base::State *state, double *distance) const;
 
+    // 各要素ごとにfromからの変位がmaxDistance以下になる範囲内でtoに近づくstateを返す.
+    virtual void elementWiseDistanceLimit(const ompl::base::State *from, const ompl::base::State *to, double maxDistance, ompl::base::State *state);
+
     //const std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > >& constraints() const {return constraints_; }
     std::shared_ptr<choreonoid_viewer::Viewer>& viewer() {return viewer_;}
     const std::shared_ptr<choreonoid_viewer::Viewer>& viewer() const {return viewer_;}

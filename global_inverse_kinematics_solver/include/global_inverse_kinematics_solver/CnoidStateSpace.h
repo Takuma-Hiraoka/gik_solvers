@@ -58,6 +58,13 @@ namespace global_inverse_kinematics_solver{
   };
 
   ompl::base::StateSamplerPtr allocGIKCompoundStateSampler(const ompl::base::StateSpace *space);
+
+  class JointAngle {
+  public:
+    cnoid::Position T;
+    double q;
+  };
+
 };
 
 #endif

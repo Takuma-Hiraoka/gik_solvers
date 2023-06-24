@@ -344,11 +344,39 @@ namespace global_inverse_kinematics_solver{
 
   }
 
-  class JointAngle {
-  public:
-    cnoid::Position T;
-    double q;
-  };
+    // 各要素ごとにfromからの変位がmaxDistance以下になる範囲内でtoに近づくstateを返す.
+  void GIKConstraint::elementWiseDistanceLimit(const ompl::base::State *from, const ompl::base::State *to, double maxDistance, ompl::base::State *state) {
+    const unsigned int m = modelQueue_->pop();
+
+    state2Link(stateSpace_, from, variables_[m]); // spaceとstateの空間をそろえる
+
+    std::vector<JointAngle> prevAngle(variables_[m].size());
+    for(int k=0;k<variables_[m].size();k++){
+      if(variables_[m][k]->isRevoluteJoint() || variables_[m][k]->isPrismaticJoint()) {
+        prevAngle[k].q = variables_[m][k]->q();
+      }else if(variables_[m][k]->isFreeJoint()) {
+        prevAngle[k].T = variables_[m][k]->T();
+      }
+    }
+
+    state2Link(stateSpace_, to, variables_[m]); // spaceとstateの空間をそろえる
+
+    for(int k=0;k<variables_[m].size();k++){
+      if(variables_[m][k]->isRevoluteJoint() || variables_[m][k]->isPrismaticJoint()) {
+        variables_[m][k]->q() = std::min(std::max(variables_[m][k]->q(), prevAngle[k].q - maxDistance), prevAngle[k].q + maxDistance);
+      }else if(variables_[m][k]->isFreeJoint()) {
+        for(int j=0;j<3;j++){
+          variables_[m][k]->p()[j] = std::min(std::max(variables_[m][k]->p()[j], prevAngle[k].T.translation()[j] - maxDistance), prevAngle[k].T.translation()[j] + maxDistance);
+        }
+        cnoid::AngleAxisd w(prevAngle[k].T.linear().transpose() * variables_[m][k]->R());
+        variables_[m][k]->R() = prevAngle[k].T.linear() * cnoid::AngleAxisd(std::min(std::max(w.angle(), - maxDistance), maxDistance), w.axis());
+      }
+    }
+
+    link2State(variables_[m], stateSpace_, state); // spaceとstateの空間をそろえる
+
+    modelQueue_->push(m);
+  }
 
   bool GIKConstraint2::projectNearValid(ompl::base::State *state, const ompl::base::State *near, double* distance) const{
     const unsigned int m = modelQueue_->pop();

@@ -44,4 +44,8 @@ namespace global_inverse_kinematics_solver{
 
   }
 
+  // 各要素ごとにfromからの変位がmaxDistance以下になる範囲内でtoに近づくstateを返す.
+  void GIKStateSpace::elementWiseDistanceLimit(const ompl::base::State *from, const ompl::base::State *to, double maxDistance, ompl::base::State *state) {
+    gikConstraint_->elementWiseDistanceLimit(from, to, maxDistance, state);
+  }
 };
