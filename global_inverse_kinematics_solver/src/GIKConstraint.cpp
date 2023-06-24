@@ -53,15 +53,40 @@ namespace global_inverse_kinematics_solver{
                                                                       param_,
                                                                       path);
 
+    bool satisfied = true;
+    for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
+      for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
+        if(!constraints_[m][i][j]->isSatisfied()) {
+          satisfied = false;
+        }
+      }
+    }
+    for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
+      if(!rejections_[m][i]->isSatisfied()) {
+        satisfied = false;
+      }
+    }
+    if(!satisfied) {
+      state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
+      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+        (*it)->calcCenterOfMass();
+      }
+      if(param_.debugLevel >= 1){
+        std::cerr << "!satisfied" << std::endl;
+      }
+    }
+
     link2State(variables_[m], stateSpace_, state); // spaceとstateの空間をそろえる
 
     if(tmp_state) {
-      for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
+      for(int i=0;i<tmp_state->intermediateStates.size();i++) for(int j=0;j<tmp_state->intermediateStates[i].size();j++) stateSpace_->freeState(tmp_state->intermediateStates[i][j]);
       tmp_state->intermediateStates.clear();
+      tmp_state->intermediateStates.resize(1);
       for(int i=0;i+1<path->size();i++){ // 終点を含まない
         ompl::base::State* st = stateSpace_->allocState();
         frame2State(path->at(i), stateSpace_, st);
-        tmp_state->intermediateStates.push_back(st);
+        tmp_state->intermediateStates[0].push_back(st);
       }
     }
 
@@ -122,15 +147,40 @@ namespace global_inverse_kinematics_solver{
                                                                       param_,
                                                                       path);
 
+    bool satisfied = true;
+    for(size_t i=0;i<constraints_[m].size()&&i<=param_.satisfiedConvergeLevel&&satisfied;i++){
+      for(size_t j=0;j<constraints_[m][i].size()&&satisfied;j++){
+        if(!constraints_[m][i][j]->isSatisfied()) {
+          satisfied = false;
+        }
+      }
+    }
+    for(size_t i=0;i<rejections_[m].size()&&satisfied;i++){
+      if(!rejections_[m][i]->isSatisfied()) {
+        satisfied = false;
+      }
+    }
+    if(!satisfied) {
+      state2Link(stateSpace_, near, variables_[m]); // spaceとstateの空間をそろえる
+      for(std::set<cnoid::BodyPtr>::const_iterator it=bodies_[m].begin(); it != bodies_[m].end(); it++){
+        (*it)->calcForwardKinematics(false); // 疎な軌道生成なので、velocityはチェックしない
+        (*it)->calcCenterOfMass();
+      }
+      if(param_.debugLevel >= 1){
+        std::cerr << "!satisfied" << std::endl;
+      }
+    }
+
     link2State(variables_[m], stateSpace_, state); // spaceとstateの空間をそろえる
 
     if(tmp_state) {
-      for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
+      for(int i=0;i<tmp_state->intermediateStates.size();i++) for(int j=0;j<tmp_state->intermediateStates[i].size();j++) stateSpace_->freeState(tmp_state->intermediateStates[i][j]);
       tmp_state->intermediateStates.clear();
+      tmp_state->intermediateStates.resize(1);
       for(int i=0;i+1<path->size();i++){ // 終点を含まない
         ompl::base::State* st = stateSpace_->allocState();
         frame2State(path->at(i), stateSpace_, st);
-        tmp_state->intermediateStates.push_back(st);
+        tmp_state->intermediateStates[0].push_back(st);
       }
     }
 
@@ -384,12 +434,13 @@ namespace global_inverse_kinematics_solver{
     }
     ompl_near_projection::NearProjectedStateSpace::StateType* tmp_state = dynamic_cast<ompl_near_projection::NearProjectedStateSpace::StateType*>(state);
     if(tmp_state) {
-      for(int i=0;i<tmp_state->intermediateStates.size();i++) stateSpace_->freeState(tmp_state->intermediateStates[i]);
+      for(int i=0;i<tmp_state->intermediateStates.size();i++) for(int j=0;j<tmp_state->intermediateStates[i].size();j++) stateSpace_->freeState(tmp_state->intermediateStates[i][j]);
       tmp_state->intermediateStates.clear();
+      tmp_state->intermediateStates.resize(1);
       for(int i=0;i+1<intermediateStates.size();i++){ // 終点を含まない
         ompl::base::State* st = stateSpace_->allocState();
         stateSpace_->copyState(st, intermediateStates[i]);
-        tmp_state->intermediateStates.push_back(st);
+        tmp_state->intermediateStates[0].push_back(st);
       }
     }
 
