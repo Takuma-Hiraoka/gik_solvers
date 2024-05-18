@@ -24,7 +24,7 @@ namespace global_inverse_kinematics_solver{
     double projectionTrapThre = 0.03;
 
     std::vector<cnoid::LinkPtr> projectLink;
-    cnoid::Position projectLocalPose = cnoid::Position::Identity();
+    cnoid::Isometry3 projectLocalPose = cnoid::Isometry3::Identity();
     double projectCellSize = 0.15; // 要パラチューン.  // 0.05よりも0.1の方が速い. 0.3よりも0.2の方が速い?
 
     double maxTranslation = 3.0;

@@ -35,7 +35,7 @@ namespace global_inverse_kinematics_solver_sample{
     abstractRobot = new cnoid::Body();
     {
       cnoid::LinkPtr rootLink = new cnoid::Link();
-      rootLink->setJointType(cnoid::Link::JointType::FREE_JOINT);
+      rootLink->setJointType(cnoid::Link::JointType::FreeJoint);
       {
         cnoid::SgShapePtr shape = new cnoid::SgShape();
         shape->setMesh(meshGenerator.generateCylinder(0.25/*radius*/, 0.9/*height*/));
@@ -46,13 +46,11 @@ namespace global_inverse_kinematics_solver_sample{
         posTransform->translation() = cnoid::Vector3(0,0,0.35);
         posTransform->rotation() = cnoid::AngleAxis(M_PI/2, cnoid::Vector3::UnitX()).toRotationMatrix();
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        rootLink->setShape(group);
+        rootLink->addShapeNode(posTransform);
       }
       {
         cnoid::LinkPtr rarmLink = new cnoid::Link();
-        rarmLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        rarmLink->setJointType(cnoid::Link::JointType::FixedJoint);
         rarmLink->setOffsetTranslation(robot->link("RARM_SHOULDER_P")->p() - robot->rootLink()->p());
         rarmLink->setName("RARM");
         rootLink->appendChild(rarmLink);
@@ -64,13 +62,11 @@ namespace global_inverse_kinematics_solver_sample{
         cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
         posTransform->translation() = cnoid::Vector3(0.4,0,-0.1);
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        rarmLink->setShape(group);
+        rarmLink->addShapeNode(posTransform);
       }
       {
         cnoid::LinkPtr larmLink = new cnoid::Link();
-        larmLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        larmLink->setJointType(cnoid::Link::JointType::FixedJoint);
         larmLink->setOffsetTranslation(robot->link("LARM_SHOULDER_P")->p() - robot->rootLink()->p());
         larmLink->setName("LARM");
         rootLink->appendChild(larmLink);
@@ -82,13 +78,11 @@ namespace global_inverse_kinematics_solver_sample{
         cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
         posTransform->translation() = cnoid::Vector3(0.4,0,-0.1);
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        larmLink->setShape(group);
+        larmLink->addShapeNode(posTransform);
       }
       {
         cnoid::LinkPtr rlegLink = new cnoid::Link();
-        rlegLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        rlegLink->setJointType(cnoid::Link::JointType::FixedJoint);
         rlegLink->setOffsetTranslation(robot->link("RLEG_HIP_Y")->p() - robot->rootLink()->p());
         rlegLink->setName("RLEG");
         rootLink->appendChild(rlegLink);
@@ -100,13 +94,11 @@ namespace global_inverse_kinematics_solver_sample{
         cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
         posTransform->translation() = cnoid::Vector3(0.2,0,-0.0);
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        rlegLink->setShape(group);
+        rlegLink->addShapeNode(posTransform);
       }
       {
         cnoid::LinkPtr llegLink = new cnoid::Link();
-        llegLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        llegLink->setJointType(cnoid::Link::JointType::FixedJoint);
         llegLink->setOffsetTranslation(robot->link("LLEG_HIP_Y")->p() - robot->rootLink()->p());
         llegLink->setName("LLEG");
         rootLink->appendChild(llegLink);
@@ -118,9 +110,7 @@ namespace global_inverse_kinematics_solver_sample{
         cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
         posTransform->translation() = cnoid::Vector3(0.2,0,-0.0);
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        llegLink->setShape(group);
+        llegLink->addShapeNode(posTransform);
       }
       abstractRobot->setRootLink(rootLink);
     }
@@ -131,10 +121,10 @@ namespace global_inverse_kinematics_solver_sample{
     horizontalRobot = new cnoid::Body();
     {
       cnoid::LinkPtr rootLink = new cnoid::Link();
-      rootLink->setJointType(cnoid::Link::JointType::FREE_JOINT);
+      rootLink->setJointType(cnoid::Link::JointType::FreeJoint);
       {
         cnoid::LinkPtr rlegLink = new cnoid::Link();
-        rlegLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        rlegLink->setJointType(cnoid::Link::JointType::FixedJoint);
         rlegLink->setOffsetTranslation(robot->link("RLEG_HIP_Y")->p() - robot->rootLink()->p());
         rlegLink->setName("RLEG");
         rootLink->appendChild(rlegLink);
@@ -148,13 +138,11 @@ namespace global_inverse_kinematics_solver_sample{
         posTransform->translation() = cnoid::Vector3(0,-0.1,-0.25);
         posTransform->rotation() = cnoid::AngleAxis(M_PI/2, cnoid::Vector3::UnitX()).toRotationMatrix();
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        rlegLink->setShape(group);
+        rlegLink->addShapeNode(posTransform);
       }
       {
         cnoid::LinkPtr llegLink = new cnoid::Link();
-        llegLink->setJointType(cnoid::Link::JointType::FIXED_JOINT);
+        llegLink->setJointType(cnoid::Link::JointType::FixedJoint);
         llegLink->setOffsetTranslation(robot->link("LLEG_HIP_Y")->p() - robot->rootLink()->p());
         llegLink->setName("LLEG");
         rootLink->appendChild(llegLink);
@@ -168,9 +156,7 @@ namespace global_inverse_kinematics_solver_sample{
         posTransform->translation() = cnoid::Vector3(0,+0.1,-0.25);
         posTransform->rotation() = cnoid::AngleAxis(M_PI/2, cnoid::Vector3::UnitX()).toRotationMatrix();
         posTransform->addChild(shape);
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
-        group->addChild(posTransform);
-        llegLink->setShape(group);
+        llegLink->addShapeNode(posTransform);
       }
       horizontalRobot->setRootLink(rootLink);
     }

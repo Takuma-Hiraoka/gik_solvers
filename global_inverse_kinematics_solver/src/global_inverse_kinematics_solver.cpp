@@ -206,6 +206,7 @@ namespace global_inverse_kinematics_solver{
 
     ompl::base::ScopedState<> start(stateSpace);
     link2State(variables[0], stateSpace, start.get());
+
     stateSpace->enforceBounds(start.get()); // 僅かにjoint limitを超えていた場合、エラーになってしまうので
     problemDefinition->clearStartStates();
     problemDefinition->addStartState(start);
@@ -221,6 +222,7 @@ namespace global_inverse_kinematics_solver{
       goal->setNearMaxError(param.nearMaxError);
       goalSpaces.push_back(goal);
     }
+
     problemDefinition->setGoals(goalSpaces);
 
     ompl::base::PlannerPtr planner;

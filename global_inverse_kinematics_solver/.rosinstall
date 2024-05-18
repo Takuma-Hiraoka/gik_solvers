@@ -1,7 +1,7 @@
 - git:
     local-name: choreonoid
     uri: https://github.com/choreonoid/choreonoid.git
-    version: release-1.7
+    version: release-2.1
 
 # for prioritized_inverse_kinematics_solvers2
 - git:
@@ -16,7 +16,7 @@
 - git:
     local-name: ik_solvers2
     uri: https://github.com/Naoki-Hiraoka/ik_solvers2.git
-    version: 1.0
+    version: 2.0
 
 # melodicにaptで入る1.4.2にはGoalSpace.hが無いので
 # https://github.com/ompl/ompl/pull/1020 の問題があるので
@@ -27,7 +27,9 @@
 - git:
     local-name: ompl_near_projection
     uri: https://github.com/Naoki-Hiraoka/ompl_near_projection.git
+    version: 1.0
 
 - git:
-    local-name: choreonoid_viewer
-    uri: https://github.com/Naoki-Hiraoka/choreonoid_viewer.git
+    local-name: choreonoid_viewer2
+    uri: https://github.com/Naoki-Hiraoka/choreonoid_viewer2.git
+    version: 2.0

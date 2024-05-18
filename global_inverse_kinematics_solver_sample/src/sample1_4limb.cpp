@@ -109,7 +109,10 @@ namespace global_inverse_kinematics_solver_sample{
     }
     global_inverse_kinematics_solver::GIKParam param;
     param.debugLevel=1;
+    param.projectLink.push_back(robot->link("RARM_WRIST_R"));
+    param.projectLocalPose.translation() = cnoid::Vector3(0.0,0.0,-0.02);
     std::shared_ptr<std::vector<std::vector<double> > > path = std::make_shared<std::vector<std::vector<double> > >();
+
     bool solved = global_inverse_kinematics_solver::solveGIK(variables,
                                                              constraints,
                                                              goals,
@@ -160,7 +163,7 @@ namespace global_inverse_kinematics_solver_sample{
       viewer.drawOn(markers);
       viewer.drawObjects();
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     }
 

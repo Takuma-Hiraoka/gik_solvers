@@ -61,7 +61,7 @@ namespace global_inverse_kinematics_solver{
 
   class JointAngle {
   public:
-    cnoid::Position T;
+    cnoid::Isometry3 T;
     double q;
   };
 

@@ -29,7 +29,6 @@ namespace global_inverse_kinematics_solver_sample{
     {
       cnoid::LinkPtr rootLink = new cnoid::Link();
       {
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
         {
           cnoid::SgShapePtr shape = new cnoid::SgShape();
           shape->setMesh(meshGenerator.generateBox(cnoid::Vector3(1,1,0.1)));
@@ -39,7 +38,7 @@ namespace global_inverse_kinematics_solver_sample{
           cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
           posTransform->translation() = cnoid::Vector3(0,0,-0.05);
           posTransform->addChild(shape);
-          group->addChild(posTransform);
+          rootLink->addShapeNode(posTransform);
         }
         {
           cnoid::SgShapePtr shape = new cnoid::SgShape();
@@ -50,9 +49,8 @@ namespace global_inverse_kinematics_solver_sample{
           cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
           posTransform->translation() = cnoid::Vector3(1,0,0.35);
           posTransform->addChild(shape);
-          group->addChild(posTransform);
+          rootLink->addShapeNode(posTransform);
         }
-        rootLink->setShape(group);
       }
       obstacle->setRootLink(rootLink);
     }
@@ -82,7 +80,6 @@ namespace global_inverse_kinematics_solver_sample{
     {
       cnoid::LinkPtr rootLink = new cnoid::Link();
       {
-        cnoid::SgGroupPtr group = new cnoid::SgGroup();
         {
           cnoid::SgShapePtr shape = new cnoid::SgShape();
           cnoid::MeshGenerator::Extrusion extrusion;
@@ -104,7 +101,7 @@ namespace global_inverse_kinematics_solver_sample{
           cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
           posTransform->translation() = cnoid::Vector3(0,0,0.0);
           posTransform->addChild(shape);
-          group->addChild(posTransform);
+          rootLink->addShapeNode(posTransform);
         }
         {
           cnoid::SgShapePtr shape = new cnoid::SgShape();
@@ -127,9 +124,8 @@ namespace global_inverse_kinematics_solver_sample{
           cnoid::SgPosTransformPtr posTransform = new cnoid::SgPosTransform();
           posTransform->translation() = cnoid::Vector3(1.0,0,0.4);
           posTransform->addChild(shape);
-          group->addChild(posTransform);
+          rootLink->addShapeNode(posTransform);
         }
-        rootLink->setShape(group);
       }
       support->setRootLink(rootLink);
     }
@@ -353,6 +349,7 @@ namespace global_inverse_kinematics_solver_sample{
     viewer->objects(horizontalRobot);
     viewer->objects(obstacle);
     viewer->objects(support);
+    viewer->drawObjects();
 
     std::vector<std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > > constraints{constraints0};
 
@@ -362,7 +359,7 @@ namespace global_inverse_kinematics_solver_sample{
 
     std::vector<double> goal;
     {
-      cnoid::Position org = abstractRobot->rootLink()->T();
+      cnoid::Isometry3 org = abstractRobot->rootLink()->T();
       abstractRobot->rootLink()->translation() += cnoid::Vector3(1.0,0.0,0.4);
       horizontalRobot->rootLink()->T() = abstractRobot->rootLink()->T();
       global_inverse_kinematics_solver::link2Frame(variables, goal);

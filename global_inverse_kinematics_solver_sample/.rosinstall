@@ -6,5 +6,14 @@
     local-name: qhulleigen
     uri: https://github.com/Naoki-Hiraoka/qhulleigen.git
 - git:
-    local-name: choreonoid_collision_tools
-    uri: https://github.com/Naoki-Hiraoka/choreonoid_collision_tools.git
+    local-name: choreonoid_collision_tools2
+    uri: https://github.com/Naoki-Hiraoka/choreonoid_collision_tools2.git
+    version: 2.0
+
+# for jaxon model
+- git:
+    local-name: msl_hand_controller
+    uri: https://gitlab.jsk.imi.i.u-tokyo.ac.jp/hiraoka/msl_hand_controller
+- git:
+    local-name: rtm-ros-robotics/rtmros_hrp2
+    uri: https://github.com/start-jsk/rtmros_hrp2

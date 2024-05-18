@@ -24,8 +24,8 @@ namespace global_inverse_kinematics_solver{
 
     std::vector<cnoid::LinkPtr>& parentLink() { return parentLink_; }
     const std::vector<cnoid::LinkPtr>& parentLink() const { return parentLink_; }
-    cnoid::Position& localPos() { return localPos_; }
-    const cnoid::Position& localPos() const { return localPos_; }
+    cnoid::Isometry3& localPos() { return localPos_; }
+    const cnoid::Isometry3& localPos() const { return localPos_; }
 
   protected:
     // model queueで管理.
@@ -34,7 +34,7 @@ namespace global_inverse_kinematics_solver{
     std::vector<std::set<cnoid::BodyPtr> > bodies_;
     std::vector<cnoid::LinkPtr> parentLink_;
 
-    cnoid::Position localPos_;
+    cnoid::Isometry3 localPos_;
   };
 
 
