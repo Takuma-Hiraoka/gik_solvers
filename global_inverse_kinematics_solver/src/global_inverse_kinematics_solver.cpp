@@ -326,7 +326,7 @@ namespace global_inverse_kinematics_solver{
         ompl::time::point start = ompl::time::now();
         std::size_t numStates = solutionPath->getStateCount();
         gikConstraint->viewer() = nullptr; // simplifySolution()中は描画しない
-        pathSimplifier->simplify(*solutionPath, param.timeout);
+        //pathSimplifier->simplify(*solutionPath, param.timeout);
         gikConstraint->viewer() = param.viewer; // simplifySolution()中は描画しない
         double simplifyTime = ompl::time::seconds(ompl::time::now() - start);
         OMPL_INFORM("Path simplification took %f seconds and changed from %d to %d states",
@@ -538,7 +538,7 @@ namespace global_inverse_kinematics_solver{
           ompl::time::point start = ompl::time::now();
           std::size_t numStates = solutionPath->getStateCount();
           gikConstraint->viewer() = nullptr; // simplifySolution()中は描画しない
-          pathSimplifier->simplify(*solutionPath, param.timeout);
+          //pathSimplifier->simplify(*solutionPath, param.timeout);
           gikConstraint->viewer() = param.viewer; // simplifySolution()中は描画しない
           double simplifyTime = ompl::time::seconds(ompl::time::now() - start);
           OMPL_INFORM("Path simplification took %f seconds and changed from %d to %d states",
