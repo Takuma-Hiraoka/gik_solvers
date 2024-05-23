@@ -32,7 +32,7 @@ namespace global_inverse_kinematics_solver_sample{
     // setup viewer
     std::shared_ptr<choreonoid_viewer::Viewer> viewer = std::make_shared<choreonoid_viewer::Viewer>();
     viewer->objects(std::vector<cnoid::BodyPtr>{robot, desk});
-
+    viewer->drawObjects(true);
 
     // setup constraints
     std::vector<std::shared_ptr<ik_constraint2::IKConstraint> > rejections;
@@ -76,16 +76,16 @@ namespace global_inverse_kinematics_solver_sample{
 
     {
       // task: env collision
-      std::shared_ptr<distance_field::PropagationDistanceField> field = std::make_shared<distance_field::PropagationDistanceField>(3,//size_x
-                                                                                                                                   3,//size_y
-                                                                                                                                   3,//size_z
-                                                                                                                                   0.02,//resolution
-                                                                                                                                   -1.5,//origin_x
-                                                                                                                                   -1.5,//origin_y
-                                                                                                                                   -1.5,//origin_z
-                                                                                                                                   0.5, // max_distance
-                                                                                                                                   true// propagate_negative_distances
-                                                                                                                                   );
+      std::shared_ptr<moveit_extensions::InterpolatedPropagationDistanceField> field = std::make_shared<moveit_extensions::InterpolatedPropagationDistanceField>(3,//size_x
+                                                                                                                                                                 3,//size_y
+                                                                                                                                                                 3,//size_z
+                                                                                                                                                                 0.02,//resolution
+                                                                                                                                                                 -1.5,//origin_x
+                                                                                                                                                                 -1.5,//origin_y
+                                                                                                                                                                 -1.5,//origin_z
+                                                                                                                                                                 0.5, // max_distance
+                                                                                                                                                                 true// propagate_negative_distances
+                                                                                                                                                                 );
       EigenSTL::vector_Vector3d vertices;
       for(int i=0;i<desk->numLinks();i++){
         std::vector<Eigen::Vector3f> vertices_ = ik_constraint2_distance_field::getSurfaceVertices(desk->link(i), 0.02);
@@ -99,14 +99,15 @@ namespace global_inverse_kinematics_solver_sample{
         constraint->A_link() = robot->link(i);
         constraint->field() = field;
         constraint->tolerance() = 0.04; // resolutionの倍数にせよ. 境界で振動する.
+        constraint->minDistance() = 0.02;
         constraint->updateBounds(); // キャッシュを内部に作る. キャッシュを作ったあと、10スレッドぶんコピーする方が速い
         if(rejection){
           rejections.push_back(constraint);
         }else{
           constraints1.push_back(constraint);
         }
-
       }
+
     }
 
 

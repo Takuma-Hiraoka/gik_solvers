@@ -56,16 +56,16 @@ namespace global_inverse_kinematics_solver_sample{
     }
 
     // collision world
-    std::shared_ptr<distance_field::PropagationDistanceField> field = std::make_shared<distance_field::PropagationDistanceField>(5,//size_x
-                                                                                                                                 5,//size_y
-                                                                                                                                 5,//size_z
-                                                                                                                                 0.04,//resolution
-                                                                                                                                 -2.5,//origin_x
-                                                                                                                                 -2.5,//origin_y
-                                                                                                                                 -2.5,//origin_z
-                                                                                                                                 0.5, // max_distance
-                                                                                                                                 false// propagate_negative_distances
-                                                                                                                                 );
+    std::shared_ptr<moveit_extensions::InterpolatedPropagationDistanceField> field = std::make_shared<moveit_extensions::InterpolatedPropagationDistanceField>(5,//size_x
+                                                                                                                                                               5,//size_y
+                                                                                                                                                               5,//size_z
+                                                                                                                                                               0.04,//resolution
+                                                                                                                                                               -2.5,//origin_x
+                                                                                                                                                               -2.5,//origin_y
+                                                                                                                                                               -2.5,//origin_z
+                                                                                                                                                               0.5, // max_distance
+                                                                                                                                                               false// propagate_negative_distances
+                                                                                                                                                               );
     EigenSTL::vector_Vector3d vertices;
     for(int i=0;i<obstacle->numLinks();i++){
       std::vector<Eigen::Vector3f> vertices_ = ik_constraint2_distance_field::getSurfaceVertices(obstacle->link(i), 0.04);
