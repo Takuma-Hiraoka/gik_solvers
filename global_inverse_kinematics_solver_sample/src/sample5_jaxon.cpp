@@ -6,6 +6,7 @@
 #include <ros/package.h>
 
 #include <global_inverse_kinematics_solver/global_inverse_kinematics_solver.h>
+#include <trajectory_optimizer/trajectory_optimizer.h>
 #include <ik_constraint2/ik_constraint2.h>
 #include <ik_constraint2_vclip/ik_constraint2_vclip.h>
 #include <ik_constraint2_distance_field/ik_constraint2_distance_field.h>
@@ -327,6 +328,25 @@ namespace global_inverse_kinematics_solver_sample{
           viewer->drawObjects();
 
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        trajectory_optimizer::TOParam toParam;
+        toParam.debugLevel=2;
+        toParam.shortcutThre=4e-2;
+        toParam.pikParam.debugLevel=0;
+        toParam.pikParam.satisfiedConvergeLevel = 1e3;
+        toParam.pikParam.convergeThre=1e-1 * path[p]->size();
+        trajectory_optimizer::solveTO(variables,
+                                      constraints,
+                                      toParam,
+                                      path[p]);
+        for(int i=0;i<path[p]->size();i++){
+          global_inverse_kinematics_solver::frame2Link(path[p]->at(i),variables);
+          robot->calcForwardKinematics(false);
+          robot->calcCenterOfMass();
+          viewer->drawObjects();
+
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
         }
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));

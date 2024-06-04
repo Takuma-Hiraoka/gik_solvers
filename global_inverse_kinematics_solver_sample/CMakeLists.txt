@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   ik_constraint2_distance_field
   choreonoid_cddlib
   global_inverse_kinematics_solver
+  trajectory_optimizer
   roslib
   choreonoid_viewer
   )
