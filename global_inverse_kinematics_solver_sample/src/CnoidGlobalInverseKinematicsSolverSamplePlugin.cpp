@@ -75,6 +75,15 @@ namespace global_inverse_kinematics_solver_sample{
   };
   typedef cnoid::ref_ptr<sample7_rootrejItem> sample7_rootrejItemPtr;
 
+  void sample8_opt();
+  class sample8_optItem : public choreonoid_viewer::ViewerBaseItem {
+  public:
+    static void initializeClass(cnoid::ExtensionManager* ext){ ext->itemManager().registerClass<sample8_optItem>("sample8_optItem"); }
+  protected:
+    virtual void main() override{ sample8_opt(); return; }
+  };
+  typedef cnoid::ref_ptr<sample8_optItem> sample8_optItemPtr;
+
   class GlobalInverseKinematicsSolverSamplePlugin : public cnoid::Plugin
   {
   public:
@@ -93,6 +102,7 @@ namespace global_inverse_kinematics_solver_sample{
       sample5_jaxonItem::initializeClass(this);
       sample6_rootItem::initializeClass(this);
       sample7_rootrejItem::initializeClass(this);
+      sample8_optItem::initializeClass(this);
       return true;
     }
   };
