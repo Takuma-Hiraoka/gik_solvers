@@ -150,7 +150,9 @@ namespace global_inverse_kinematics_solver{
       ambientSpace = std::make_shared<ompl::base::RealVectorStateSpace>(0);
     }
 
-    ambientSpace->setStateSamplerAllocator(&allocGIKCompoundStateSampler); // weightImportanceを常に1にすることで、plannerのrangeに設定した値だけ各関節(rootLink含む)が均等に動くようになる.
+    if (std::dynamic_pointer_cast<ompl::base::CompoundStateSpace>(ambientSpace) != nullptr) { // ompl::base::CompoundStateSpaceの場合のみデフォルトから変える.
+      ambientSpace->setStateSamplerAllocator(&allocGIKCompoundStateSampler); // weightImportanceを常に1にすることで、plannerのrangeに設定した値だけ各関節(rootLink含む)が均等に動くようになる.
+    }
     ambientSpace->registerDefaultProjection(std::make_shared<DummyProjectionEvaluator>(ambientSpace)); // WrapperStateSpace::setup()のときに、ambientSpaceのdefaultProjectionが無いとエラーになる. CompoundStateSpaceにはDefaultProjectionが無いので、とりあえず適当に与えておく
 
     return ambientSpace;
